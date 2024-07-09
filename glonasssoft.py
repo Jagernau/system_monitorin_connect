@@ -23,7 +23,7 @@ class Glonasssoft(mixins.MixInSystemMonitoring):
         """
         get all glonass objects (vehicles)
         """
-        url = f"{self.based_adres}v3/vehicles/find"
+        url = f"{self.based_adres}vehicles/"
         headers = {"X-Auth": token, 'Content-type': 'application/json', 'Accept': 'application/json'}
         response = requests.get(url, headers=headers,)
         if response.status_code == 200:
@@ -44,5 +44,5 @@ token = glonass.token
 time.sleep(3)
 vehicles = glonass.get_glonasssoft_vehicles(token=token)
 
-save_to_json(vehicles,'vehicles')
+save_to_json(vehicles,'glonass_vehicles')
 
