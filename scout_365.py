@@ -51,6 +51,25 @@ class ScoutTreeHundred(mixins.MixInSystemMonitoring):
             return None
 
 
+    def get_detail_vehicle(self, token, unitId):
+        """
+        Онлайн-данные одного ТС
+
+        """
+        
+        url = f"{self.based_adres}v3/online-data/{unitId}"
+        headers = {
+            "Content-Type": "application/json, text/json",
+            "Authorization": f"Bearer {token}",
+        }
+
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            result = response.json()
+            return result
+        else:
+            return None
+
 
 scout_365 = ScoutTreeHundred(
         login=config.SCOUT_TREEHUNDRED_LOGIN,
@@ -59,10 +78,11 @@ scout_365 = ScoutTreeHundred(
         )
 
 token = scout_365.token(config.SCOUT_TREEHUNDRED_BASE_TOKEN)
-all_vehicles = scout_365.get_all_vehicles(token=token)
-print(all_vehicles)
+#all_vehicles = scout_365.get_all_vehicles(token=token)
+detail_vehicle = scout_365.get_detail_vehicle(token, 98822)
+print(detail_vehicle)
 
 
 
-save_to_json(all_vehicles,'scout_365_all_vehicles')
+save_to_json(detail_vehicle,'scout_365_detail_vehicle')
 
