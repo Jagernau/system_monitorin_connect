@@ -33,109 +33,91 @@ class Gelios(mixins.MixInSystemMonitoring):
         else:
             return None
 
+    def _get_request(self, url, token):
+        """Универсальный метод для выполнения GET-запросов"""
+        headers = {
+            "Content-Type": "application/json, text/json",
+            "Authorization": f"Bearer {token}",
+        }
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return None
+
+
+class GeliosUnit(Gelios):
+    """
+    Объекты Гелиос
+    """
+    def __init__(self, gelios_class: Gelios):
+        """
+        При инициализации класса
+        Логин, пароль, основной адрес.
+        """
+        self.gelios_class = gelios_class
+
+
+
     def get_all_units(self, token):
         """
         Все ТС Гелиос
 
         """
+        return self._get_request(f"{self.gelios_class.based_adres}v1/units", token)
         
-        url = f"{self.based_adres}v1/units"
-        headers = {
-            "Content-Type": "application/json, text/json",
-            "Authorization": f"Bearer {token}",
-        }
-
-        response = requests.get(url, headers=headers)
-        if response.status_code == 200:
-            result = response.json()
-            return result
-        else:
-            return None
 
     def get_all_units_groups(self, token):
         """
         Все группировки объектов
 
         """
+        return self._get_request(f"{self.gelios_class.based_adres}v1/units/groups", token)
         
-        url = f"{self.based_adres}v1/units/groups"
-        headers = {
-            "Content-Type": "application/json, text/json",
-            "Authorization": f"Bearer {token}",
-        }
-
-        response = requests.get(url, headers=headers)
-        if response.status_code == 200:
-            result = response.json()
-            return result
-        else:
-            return None
 
     def get_detail_unit_from_id(self, token, unit_id):
         """
         Детально по объекту по Id
 
         """
-        
-        url = f"{self.based_adres}v1/units/{unit_id}"
-        headers = {
-            "Content-Type": "application/json, text/json",
-            "Authorization": f"Bearer {token}",
-        }
-
-        response = requests.get(url, headers=headers)
-        if response.status_code == 200:
-            result = response.json()
-            return result
-        else:
-            return None
+        return self._get_request(f"{self.gelios_class.based_adres}v1/units/{unit_id}", token)
 
     def get_detail_unit_group_from_unit_id(self, token, unit_id):
         """
         Выдать к каким группам пренадлежит объект, по unit_id
 
         """
+        return self._get_request(f"{self.gelios_class.based_adres}v1/units/{unit_id}/groups", token)
+
+
+class GeliosUser(Gelios):
+    """
+    Пользователи Гелиос
+    """
+    def __init__(self, gelios_class: Gelios):
+        """
+        При инициализации класса
+        Логин, пароль, основной адрес.
+        """
+        self.gelios_class = gelios_class
         
-        url = f"{self.based_adres}v1/units/{unit_id}/groups"
-        headers = {
-            "Content-Type": "application/json, text/json",
-            "Authorization": f"Bearer {token}",
-        }
-
-        response = requests.get(url, headers=headers)
-        if response.status_code == 200:
-            result = response.json()
-            return result
-        else:
-            return None
-
-
     def get_all_users(self, token):
         """
         Все Создатели
 
         """
+        return self._get_request(f"{self.gelios_class.based_adres}v1/users", token)
         
-        url = f"{self.based_adres}v1/users"
-        headers = {
-            "Content-Type": "application/json, text/json",
-            "Authorization": f"Bearer {token}",
-        }
-
-        response = requests.get(url, headers=headers)
-        if response.status_code == 200:
-            result = response.json()
-            return result
-        else:
-            return None
 
 
 gelios = Gelios(user, pas, bas)
 token = gelios.token()
-#all_vehicles = gelios.get_all_vehicles(token)
-#all_unit_groups = gelios.get_all_units_groups(token)
-#detail_unit_group_id = gelios.get_detail_unit_group_from_unit_id(token, 797051)
-all_users = gelios.get_all_users(token)
+#gelios_unit = GeliosUnit(gelios)
+#all_vehicles = gelios_unit.get_all_vehicles(token)
+#all_unit_groups = gelios_unit.get_all_units_groups(token)
+#detail_unit_group_id = gelios_unit.get_detail_unit_group_from_unit_id(token, 797051)
+gelios_user = GeliosUser(gelios)
+all_users = gelios_user.get_all_users(token)
 print(all_users)
 
 
