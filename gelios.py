@@ -107,19 +107,38 @@ class GeliosUser(Gelios):
 
         """
         return self._get_request(f"{self.gelios_class.based_adres}v1/users", token)
-        
+
+    def get_detail_user_id(self, token, user_id):
+        """
+        Детально по создателю (Юзеру) по id Юзера
+
+        """
+        return self._get_request(f"{self.gelios_class.based_adres}v1/users/{user_id}", token)
+
+    def get_groups_user_id(self, token, user_id):
+        """
+        Получить группы объектов юзера по user_id
+        Выдаёт все объекты Бесполезен.
+
+        """
+        return self._get_request(f"{self.gelios_class.based_adres}v1/users/{user_id}/access/units/groups", token)
+
+       
 
 
 gelios = Gelios(user, pas, bas)
 token = gelios.token()
 #gelios_unit = GeliosUnit(gelios)
-#all_vehicles = gelios_unit.get_all_vehicles(token)
-#all_unit_groups = gelios_unit.get_all_units_groups(token)
-#detail_unit_group_id = gelios_unit.get_detail_unit_group_from_unit_id(token, 797051)
+#all_units = gelios_unit.get_all_units(token)
+#all_units_groups = gelios_unit.get_all_units_groups(token)
+#detail_unit_from_id = gelios_unit.get_detail_unit_from_id(token, 798300)
+#unit_group_from_unit_id = gelios_unit.get_detail_unit_group_from_unit_id(token, 798300)
 gelios_user = GeliosUser(gelios)
-all_users = gelios_user.get_all_users(token)
-print(all_users)
+#all_users = gelios_user.get_all_users(token)
+detail_user_from_user_id = gelios_user.get_detail_user_id(token, 108025)
+#user_groups_from_id = gelios_user.get_groups_user_id(token, 107752)
+print(detail_user_from_user_id)
 
 
-save_to_json(all_users,'gelios_all_users.json')
+save_to_json(detail_user_from_user_id,'gelios_detail_user_from_user_id_108025')
 
