@@ -111,9 +111,6 @@ class ScoutTreeScopes(ScoutTreeHundred):
         self.scouttree_class = scouttree_class
 
         
-        return self._get_request(f"{self.scouttree_class.based_adres}v3/units/scopes", token)
-
-
     def get_all_scopes_and_companys(self, token): # Важный
         """
         Получение подразделений вместе с родительскими компаниями
@@ -133,20 +130,18 @@ scout_365 = ScoutTreeHundred(
         )
 
 token = scout_365.token(bas_tok)
-scout_units = ScoutTreeUnits(scout_365) # UNITS
-
 
 #Объекты
 scout_units = ScoutTreeUnits(scout_365) # UNITS
 units_and_scopes = scout_units.get_all_units_and_scopes(token) # Все скоупы- группы объектов не показывает
 
 #Группы объектов
-#scout_scopes = ScoutTreeScopes(scout_365)
-#all_scopes_and_companys = scout_scopes.get_all_scopes_and_companys(token) # Все компании с родителями
+# scout_scopes = ScoutTreeScopes(scout_365)
+# all_scopes_and_companys = scout_scopes.get_all_scopes_and_companys(token) # Все компании с родителями
 
 
 print(units_and_scopes)
 
 
-save_to_json(units_and_scopes,'units_and_scopes')
+save_to_json(units_and_scopes,'scout_365_all_units_and_scopes_demo')
 
