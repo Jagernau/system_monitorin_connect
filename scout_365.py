@@ -3,7 +3,6 @@ import mixins
 import json
 import requests
 import config
-import time
 
 user = str(config.SCOUT_TREEHUNDRED_LOGIN)
 pas = str(config.SCOUT_TREEHUNDRED_PASSWORD)
@@ -63,46 +62,47 @@ class ScoutTreeUnits(ScoutTreeHundred):
         """
         self.scouttree_class = scouttree_class
 
+
+    # Без лицензии пусто
     def get_all_units(self, token):
         """
-        Все Объекты с СКАУТ_365 
+        Все Объекты с СКАУТ_365
+        На учётке suntel без лицензии пусто,
+        На учётке demo данные идут
 
         """
-        
         return self._get_request(f"{self.scouttree_class.based_adres}v3/units", token)
+
 
     def get_all_units_and_scopes(self, token): # Важный но не работает
         """
         Все Объекты со скоупами- группами объектов
         в случае на демо версии и аккаунта нашей фирмы: scopeIds- пусто
         """
-        
         return self._get_request(f"{self.scouttree_class.based_adres}v3/units/units-previews", token)
-
-
-    def get_all_units_and_groups(self, token):
-        """
-        Все Объекты с группами
-        в случае на демо версии и аккаунта нашей фирмы: scopeIds- пусто
-        """
-        
-        return self._get_request(f"{self.scouttree_class.based_adres}v3/units/unit-group-ids", token)
 
 
     def get_detail_online_data(self, token, unitId): # Важный
         """
         Детально с онлайн данными по объекту по unit_id
 
-        """
-        
+        """    
         return self._get_request(f"{self.scouttree_class.based_adres}v3/online-data/{unitId}", token)
+
+
+    # Пусто у аккаунта suntel, нет лицензий
+    # def get_available_units(self, token):
+    #     """
+    #     Все доступные объекты
+    #     """
+    #     return self._get_request(f"{self.scouttree_class.based_adres}v3/units-info", token)
+
 
 
 class ScoutTreeScopes(ScoutTreeHundred):
     """ 
     Компании Скаут_365 они же группы объектов
     """
-
     def __init__(self, scouttree_class: ScoutTreeHundred):
         """
         При инициализации класса
@@ -122,6 +122,19 @@ class ScoutTreeScopes(ScoutTreeHundred):
         return self._get_request(f"{self.scouttree_class.based_adres}v3/units/scope-with-parents", token)
 
 
+    def get_groups_with_units(self, token): # Важный рабочая
+        """
+        Группы с объектами
+        """    
+        return self._get_request(f"{self.scouttree_class.based_adres}v3/units/unit-group-ids", token)
+
+    # Пустой нет лицензий
+    # def get_company_units(self, token):
+    #     """
+    #     Все компании с объектами
+    #     """    
+    #     return self._get_request(f"{self.scouttree_class.based_adres}v3/units/scopes-units", token)
+    #
 
 scout_365 = ScoutTreeHundred(
         login=user,
@@ -133,15 +146,18 @@ token = scout_365.token(bas_tok)
 
 #Объекты
 scout_units = ScoutTreeUnits(scout_365) # UNITS
-units_and_scopes = scout_units.get_all_units_and_scopes(token) # Все скоупы- группы объектов не показывает
+#all_units = scout_units.get_all_units(token) # Все объекты без лицензии пусто на demo данные есть
+#units_and_scopes = scout_units.get_all_units_and_scopes(token) # Все объекты с группами
+detail_online_data = scout_units.get_detail_online_data(token, 118274) # Детально с онлайн данными по объекту по unit_id пусто на suntel учётной записи без лицензии
+
 
 #Группы объектов
-# scout_scopes = ScoutTreeScopes(scout_365)
+#scout_scopes = ScoutTreeScopes(scout_365)
 # all_scopes_and_companys = scout_scopes.get_all_scopes_and_companys(token) # Все компании с родителями
+#all_groups_with_units = scout_scopes.get_groups_with_units(token) Все группы объектов с объектами
+
+print(detail_online_data)
 
 
-print(units_and_scopes)
-
-
-save_to_json(units_and_scopes,'scout_365_all_units_and_scopes_demo')
+save_to_json(detail_online_data,'scout_365_detail_online_data')
 
