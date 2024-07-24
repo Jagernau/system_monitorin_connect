@@ -71,10 +71,10 @@ class ScoutTreeUnits(ScoutTreeHundred):
         
         return self._get_request(f"{self.scouttree_class.based_adres}v3/units", token)
 
-    def get_all_units_and_scopes(self, token):
+    def get_all_units_and_scopes(self, token): # Важный но не работает
         """
-        Все Объекты со скоупами
-
+        Все Объекты со скоупами- группами объектов
+        в случае на демо версии и аккаунта нашей фирмы: scopeIds- пусто
         """
         
         return self._get_request(f"{self.scouttree_class.based_adres}v3/units/units-previews", token)
@@ -83,13 +83,13 @@ class ScoutTreeUnits(ScoutTreeHundred):
     def get_all_units_and_groups(self, token):
         """
         Все Объекты с группами
-
+        в случае на демо версии и аккаунта нашей фирмы: scopeIds- пусто
         """
         
         return self._get_request(f"{self.scouttree_class.based_adres}v3/units/unit-group-ids", token)
 
 
-    def get_detail_online_data(self, token, unitId):
+    def get_detail_online_data(self, token, unitId): # Важный
         """
         Детально с онлайн данными по объекту по unit_id
 
@@ -110,24 +110,19 @@ class ScoutTreeScopes(ScoutTreeHundred):
         """
         self.scouttree_class = scouttree_class
 
-    def get_all_companys(self, token):
-        """
-        Все Компании с СКАУТ_365
-
-        """
         
         return self._get_request(f"{self.scouttree_class.based_adres}v3/units/scopes", token)
 
 
-    def get_all_scopes_and_companys(self, token):
+    def get_all_scopes_and_companys(self, token): # Важный
         """
         Получение подразделений вместе с родительскими компаниями
+        если 
 
-        """
-        
+        если "companyId" и "id" совпадают то это компания
+        если "parentId" = 3668(наша заглавная фирма) то такой скоуп холдинг
+        """      
         return self._get_request(f"{self.scouttree_class.based_adres}v3/units/scope-with-parents", token)
-
-
 
 
 
@@ -139,12 +134,19 @@ scout_365 = ScoutTreeHundred(
 
 token = scout_365.token(bas_tok)
 scout_units = ScoutTreeUnits(scout_365) # UNITS
-scout_scopes = ScoutTreeScopes(scout_365)
-
-all_companys = scout_scopes.get_all_companys(token) # Все компании
-
-print(all_companys)
 
 
-save_to_json(all_companys,'scout_365_all_companys')
+#Объекты
+scout_units = ScoutTreeUnits(scout_365) # UNITS
+units_and_scopes = scout_units.get_all_units_and_scopes(token) # Все скоупы- группы объектов не показывает
+
+#Группы объектов
+#scout_scopes = ScoutTreeScopes(scout_365)
+#all_scopes_and_companys = scout_scopes.get_all_scopes_and_companys(token) # Все компании с родителями
+
+
+print(units_and_scopes)
+
+
+save_to_json(units_and_scopes,'units_and_scopes')
 
