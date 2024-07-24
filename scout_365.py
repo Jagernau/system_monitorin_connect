@@ -5,7 +5,15 @@ import requests
 import config
 import time
 
+user = str(config.SCOUT_TREEHUNDRED_LOGIN)
+pas = str(config.SCOUT_TREEHUNDRED_PASSWORD)
+bas = str(config.SCOUT_TREEHUNDRED_BASED_ADRESS)
+bas_tok = str(config.SCOUT_TREEHUNDRED_BASE_TOKEN)
+
 class ScoutTreeHundred(mixins.MixInSystemMonitoring):
+    """ 
+    Получение данных с системы мониторинга Скаут_365
+    """
 
     def token(self, base_token):
         """
@@ -31,58 +39,112 @@ class ScoutTreeHundred(mixins.MixInSystemMonitoring):
         else:
             return None
 
-    def get_all_vehicles(self, token):
-        """
-        Get All Vehicles Scout_365
-
-        """
-        
-        url = f"{self.based_adres}v3/units"
+    def _get_request(self, url, token):
+        """Универсальный метод для выполнения GET-запросов"""
         headers = {
             "Content-Type": "application/json, text/json",
             "Authorization": f"Bearer {token}",
         }
-
         response = requests.get(url, headers=headers)
         if response.status_code == 200:
-            result = response.json()
-            return result
+            return response.json()
         else:
             return None
 
+class ScoutTreeUnits(ScoutTreeHundred):
+    """ 
+    Объекты Скаут_365
+    """
 
-    def get_detail_vehicle(self, token, unitId):
+    def __init__(self, scouttree_class: ScoutTreeHundred):
         """
-        Онлайн-данные одного ТС
+        При инициализации класса
+        Логин, пароль, основной адрес.
+        """
+        self.scouttree_class = scouttree_class
+
+    def get_all_units(self, token):
+        """
+        Все Объекты с СКАУТ_365 
 
         """
         
-        url = f"{self.based_adres}v3/online-data/{unitId}"
-        headers = {
-            "Content-Type": "application/json, text/json",
-            "Authorization": f"Bearer {token}",
-        }
+        return self._get_request(f"{self.scouttree_class.based_adres}v3/units", token)
 
-        response = requests.get(url, headers=headers)
-        if response.status_code == 200:
-            result = response.json()
-            return result
-        else:
-            return None
+    def get_all_units_and_scopes(self, token):
+        """
+        Все Объекты со скоупами
+
+        """
+        
+        return self._get_request(f"{self.scouttree_class.based_adres}v3/units/units-previews", token)
+
+
+    def get_all_units_and_groups(self, token):
+        """
+        Все Объекты с группами
+
+        """
+        
+        return self._get_request(f"{self.scouttree_class.based_adres}v3/units/unit-group-ids", token)
+
+
+    def get_detail_online_data(self, token, unitId):
+        """
+        Детально с онлайн данными по объекту по unit_id
+
+        """
+        
+        return self._get_request(f"{self.scouttree_class.based_adres}v3/online-data/{unitId}", token)
+
+
+class ScoutTreeScopes(ScoutTreeHundred):
+    """ 
+    Компании Скаут_365 они же группы объектов
+    """
+
+    def __init__(self, scouttree_class: ScoutTreeHundred):
+        """
+        При инициализации класса
+        Логин, пароль, основной адрес.
+        """
+        self.scouttree_class = scouttree_class
+
+    def get_all_companys(self, token):
+        """
+        Все Компании с СКАУТ_365
+
+        """
+        
+        return self._get_request(f"{self.scouttree_class.based_adres}v3/units/scopes", token)
+
+
+    def get_all_scopes_and_companys(self, token):
+        """
+        Получение подразделений вместе с родительскими компаниями
+
+        """
+        
+        return self._get_request(f"{self.scouttree_class.based_adres}v3/units/scope-with-parents", token)
+
+
+
 
 
 scout_365 = ScoutTreeHundred(
-        login=config.SCOUT_TREEHUNDRED_LOGIN,
-        password=config.SCOUT_TREEHUNDRED_PASSWORD,
-        based_adres=config.SCOUT_TREEHUNDRED_BASED_ADRESS
+        login=user,
+        password=pas,
+        based_adres=bas
         )
 
-token = scout_365.token(config.SCOUT_TREEHUNDRED_BASE_TOKEN)
-#all_vehicles = scout_365.get_all_vehicles(token=token)
-detail_vehicle = scout_365.get_detail_vehicle(token, 98822)
-print(detail_vehicle)
+token = scout_365.token(bas_tok)
+scout_units = ScoutTreeUnits(scout_365) # UNITS
+scout_scopes = ScoutTreeScopes(scout_365)
+
+all_companys = scout_scopes.get_all_companys(token) # Все компании
+
+print(all_companys)
 
 
-
-save_to_json(detail_vehicle,'scout_365_detail_vehicle')
+save_to_json(all_companys,'scout_365_all_companys')
 
