@@ -74,7 +74,7 @@ class ScoutTreeUnits(ScoutTreeHundred):
         return self._get_request(f"{self.scouttree_class.based_adres}v3/units", token)
 
 
-    def get_all_units_and_scopes(self, token): # Важный но не работает
+    def get_all_units_with_scopes(self, token): # Важный но не работает
         """
         Все Объекты со скоупами- группами объектов
         в случае на демо версии и аккаунта нашей фирмы: scopeIds- пусто
@@ -136,6 +136,28 @@ class ScoutTreeScopes(ScoutTreeHundred):
     #     return self._get_request(f"{self.scouttree_class.based_adres}v3/units/scopes-units", token)
     #
 
+
+class ScoutTreeUsers(ScoutTreeHundred):
+    """ 
+    Юзеры Скаут_365
+    Нет возможности получить пользователей
+    """
+    def __init__(self, scouttree_class: ScoutTreeHundred):
+        """
+        При инициализации класса
+        Логин, пароль, основной адрес.
+        """
+        self.scouttree_class = scouttree_class
+
+        
+    def get_current_user(self, token): # Важный
+        """
+        Все Юзеры Скаут_365
+        """      
+        return self._get_request(f"{self.scouttree_class.based_adres}v3/user/profile", token)
+
+
+
 scout_365 = ScoutTreeHundred(
         login=user,
         password=pas,
@@ -145,19 +167,23 @@ scout_365 = ScoutTreeHundred(
 token = scout_365.token(bas_tok)
 
 #Объекты
-scout_units = ScoutTreeUnits(scout_365) # UNITS
+#scout_units = ScoutTreeUnits(scout_365) # UNITS
 #all_units = scout_units.get_all_units(token) # Все объекты без лицензии пусто на demo данные есть
 #units_and_scopes = scout_units.get_all_units_and_scopes(token) # Все объекты с группами
-detail_online_data = scout_units.get_detail_online_data(token, 118274) # Детально с онлайн данными по объекту по unit_id пусто на suntel учётной записи без лицензии
+#detail_online_data = scout_units.get_detail_online_data(token, 118274) # Детально с онлайн данными по объекту по unit_id пусто на suntel учётной записи без лицензии
 
 
 #Группы объектов
 #scout_scopes = ScoutTreeScopes(scout_365)
 # all_scopes_and_companys = scout_scopes.get_all_scopes_and_companys(token) # Все компании с родителями
-#all_groups_with_units = scout_scopes.get_groups_with_units(token) Все группы объектов с объектами
-
-print(detail_online_data)
+#all_groups_with_units = scout_scopes.get_groups_with_units(token) # Все группы объектов с объектами
 
 
-save_to_json(detail_online_data,'scout_365_detail_online_data')
+#Юзеры
+scout_users = ScoutTreeUsers(scout_365)
+all_users = scout_users.get_all_users(token)
+
+print(all_users)
+
+#save_to_json(all_units,'scout_365_all_units__demo')
 
