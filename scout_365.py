@@ -167,10 +167,10 @@ scout_365 = ScoutTreeHundred(
 token = scout_365.token(bas_tok)
 
 #Объекты
-#scout_units = ScoutTreeUnits(scout_365) # UNITS
+scout_units = ScoutTreeUnits(scout_365) # UNITS
 #all_units = scout_units.get_all_units(token) # Все объекты без лицензии пусто на demo данные есть
 #units_and_scopes = scout_units.get_all_units_and_scopes(token) # Все объекты с группами
-#detail_online_data = scout_units.get_detail_online_data(token, 118274) # Детально с онлайн данными по объекту по unit_id пусто на suntel учётной записи без лицензии
+detail_online_data = scout_units.get_detail_online_data(token, 98825) # Детально с онлайн данными по объекту по unit_id пусто на suntel учётной записи без лицензии
 
 
 #Группы объектов
@@ -180,10 +180,10 @@ token = scout_365.token(bas_tok)
 
 
 #Юзеры
-scout_users = ScoutTreeUsers(scout_365)
-all_users = scout_users.get_all_users(token)
+# scout_users = ScoutTreeUsers(scout_365)
+# all_users = scout_users.get_all_users(token)
 
-print(all_users)
+print(detail_online_data)
 
-#save_to_json(all_units,'scout_365_all_units__demo')
+save_to_json(detail_online_data,'scout_365_detail_unit__demo')
 
