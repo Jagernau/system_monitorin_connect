@@ -65,7 +65,7 @@ class GlonasssUnits(Glonasssoft):
         self.glonass_class = glonass_class
 
 
-    def get_all_vehicles_old_method(self, token: str):
+    def get_all_vehicles_old(self, token: str):
         """
         Метод получения всех объектов glonasssoft
         """
@@ -73,7 +73,7 @@ class GlonasssUnits(Glonasssoft):
         return self._get_request(f"{self.glonass_class.based_adres}vehicles/", token)
 
 
-    def get_all_vehicles__new(self, token: str, parentId: str):
+    def get_all_vehicles_new(self, token: str, parentId: str):
         """
         Метод получения всех объектов glonasssoft
         """
@@ -88,9 +88,10 @@ class GlonasssUnits(Glonasssoft):
         time.sleep(1)
         return self._get_request(f"{self.glonass_class.based_adres}v3/vehicles/{vehicleId}", token)
 
+
 class GlonasssAgents(Glonasssoft):
     """
-    Объекты Глонассофт
+    Группы объектов Глонассофт
     """
     def __init__(self, glonass_class: Glonasssoft ):
         """
@@ -99,7 +100,7 @@ class GlonasssAgents(Glonasssoft):
         self.glonass_class = glonass_class
 
 
-    def get_all_agents_old_method(self, token):
+    def get_all_agents_old(self, token):
         """
         Метод получения всех клиентов старый метод
         Полные данные с родителями
@@ -138,7 +139,7 @@ class GlonasssUsers(Glonasssoft):
         self.glonass_class = glonass_class
 
 
-    def get_all_users_old_method(self, token):
+    def get_all_users_old(self, token):
         """
         Метод получения всех учёток старый метод
         Полные данные с родителями
@@ -207,16 +208,22 @@ class GlonasssRetranlators(Glonasssoft):
         """
         self.glonass_class = glonass_class
 
-    def get_client_retranlators(self, token, parentId: str):
+    def get_client_retranlators(self, token, client_name: str):
         """
         Метод получения всех ретрансляторов клиента
         """
         data = {
-                "parentId": str(parentId)
+                "search": str(client_name)
             }
         time.sleep(1)
         return self._post_request(f"{self.glonass_class.based_adres}v3/retranslations/find", token, data)
 
+    def get_detail_client_retranlators_id(self, token, retrans_id: str):
+        """
+        Метод получения детальной информации по ретрансляции
+        """
+        time.sleep(1)
+        return self._get_request(f"{self.glonass_class.based_adres}v3/retranslations/{retrans_id}", token)
 
 
 class GlonasssRecyclebin(Glonasssoft):
@@ -238,6 +245,23 @@ class GlonasssRecyclebin(Glonasssoft):
         time.sleep(1)
         return self._get_request(f"{self.glonass_class.based_adres}v3/Vehicles/recyclebin/all", token)
 
+class GlonasssDeviceTypes(Glonasssoft):
+    """
+    Получить список типов устройств
+    """
+    def __init__(self, glonass_class: Glonasssoft ):
+        """
+        При инициализации класса
+        """
+        self.glonass_class = glonass_class
+
+
+    def get_all_devices_types(self, token):
+        """
+        Метод получения всех типов устройств Глонассофт
+        """
+        time.sleep(1)
+        return self._get_request(f"{self.glonass_class.based_adres}v3/devices/types", token)
 
 
 glonass = Glonasssoft(login, password, based_adres)
@@ -246,34 +270,39 @@ token = glonass.token()
 
 #glonass_units = GlonasssUnits(glonass)
 #all_vehicles = glonass_units.get_all_vehicles(token)
-#details_vehicle = glonass_units.get_detail_vehicle_by_vehicleid(token,'302174')
-#all_vehicles__new = glonass_units.get_all_vehicles__new(token,"80eb1587-12cf-44d4-b0d0-c09b7ddf6110")
+#details_vehicle = glonass_units.get_detail_vehicle_by_vehicleid(token,'202274')
+#all_vehicles_new = glonass_units.get_all_vehicles_new(token,"80eb1587-12cf-44d4-b0d0-c09b7ddf6110")
 
 
 #glonass_agents = GlonasssAgents(glonass)
 #all_agents_old = glonass_agents.get_all_agents_old_method(token)
 # "80eb1587-12cf-44d4-b0d0-c09b7ddf6110" головная группа
 #all_agents_new_method = glonass_agents.get_all_agents_with_daughter_new(token,"80eb1587-12cf-44d4-b0d0-c09b7ddf6110")
-#details_agent = glonass_agents.get_detail_agent_by_agentid(token,"57382190-3f5d-4472-83e5-82c9ab31098f")
+#details_agent = glonass_agents.get_detail_agent_by_agentid(token,"4244ba44-f60d-471b-95c7-1269cdd8d979")
 
 #glonass_users = GlonasssUsers(glonass)
 #all_users_old = glonass_users.get_all_users_old_method(token)
 # "80eb1587-12cf-44d4-b0d0-c09b7ddf6110" головная группа
 #all_users_new_method = glonass_users.get_all_users_with_daughter_new(token,"80eb1587-12cf-44d4-b0d0-c09b7ddf6110")
-#details_user = glonass_users.get_detail_user_by_userid(token, "ba1354c4-d4d9-4d18-bca7-7fcb65c8599e")
+#detail_user = glonass_users.get_detail_user_by_userid(token, "9c813a6a-7af6-422f-af34-738b35faa806")
 
 #models = GlonasssModels(glonass)
-#client_models = models.get_client_models(token, "4d943187-83d3-4a36-a2c4-3ffcecd7744d") # нужно обращаться по конкретному клиенту
+#client_models = models.get_client_models(token, "4244ba44-f60d-471b-95c7-1269cdd8d979") # нужно обращаться по конкретному клиенту
 #details_model = models.get_detail_model_by_modelid(token, "f8f5b6f5-5f27-4c3a-9e6f-6d2e0d0e0c9e")
 
 
-# retranlators = GlonasssRetranlators(glonass)
-# client_retranlators = retranlators.get_client_retranlators(token, "27eb4840-d5da-471c-8c6b-0723c1bc9fce") # нужно обращаться по конкретному клиенту
+retranlators = GlonasssRetranlators(glonass)
+client_retranlators = retranlators.get_client_retranlators(token, "Нижегородский_лесопожарный_центр") # нужно обращаться по конкретному клиенту
+#detail_retrans = retranlators.get_client_retranlators(token, "42e4cc27-f964-4aab-bbbd-62b216184c85")
 
-obj_rec = GlonasssRecyclebin(glonass)
-all_vehicles_recyclebin = obj_rec.get_all_recyclebin(token)
 
-print(all_vehicles_recyclebin)
+#obj_rec = GlonasssRecyclebin(glonass)
+#all_vehicles_recyclebin = obj_rec.get_all_recyclebin(token)
 
-#save_to_json(all_vehicles__new,'glonass_all_vehicles__new_method')
+#devices_types = GlonasssDeviceTypes(glonass)
+#all_devices_types = devices_types.get_all_devices_types(token)
+
+print(client_retranlators)
+
+#save_to_json(client_retranlators,'glonasss_all_client_retranslators_Нижегородский_лесопожарный_центр')
 
