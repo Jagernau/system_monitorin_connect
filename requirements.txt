@@ -3,4 +3,6 @@ charset-normalizer==3.3.2
 idna==3.7
 python-dotenv==1.0.1
 requests==2.32.3
+six==1.16.0
+thrift==0.20.0
 urllib3==2.2.2

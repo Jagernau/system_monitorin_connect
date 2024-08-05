@@ -53,19 +53,6 @@ class FortObjects(Fort):
         self.fort_class = fort_class
 
 
-    def get_objects_tree(self, token: str):
-        """
-        Запросить дерево объектов
-        Не приминяемо
-        """
-        params = {
-                'SessionId': str(token),
-                'companyId': 0
-        }
-        time.sleep(1)
-        return self._get_request(f"{self.fort_class.based_adres}v1/gettree?all=true", token, params=params)
-
-
     def get_all_objects(self, token: str):
         """
         Метод получения всех Доступных объектов
@@ -227,8 +214,8 @@ token = fort.token()
 
 
 # Группы объектов
-# fort_objects_groups = FortObjectsGroups(fort)
-# all_objects_groups = fort_objects_groups.get_all_objects_groups(token)
+#fort_objects_groups = FortObjectsGroups(fort)
+#all_objects_groups = fort_objects_groups.get_all_objects_groups(token)
 
 
 # Пользователи
@@ -237,5 +224,5 @@ fort_users = FortUsers(fort)
 all_users_groups = fort_users.get_all_users_groups(token)
 
 print(all_users_groups)
-save_to_json(all_users_groups,'fort_users_groups')
+save_to_json(all_users_groups,'fort_all_users_groups')
 
