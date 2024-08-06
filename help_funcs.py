@@ -1,5 +1,8 @@
 import json
 
+from thrif.dispatch.server.thrif.backend.DispatchBackend import Client
+
+
 def save_to_json(data, file_name: str):
     """ 
     Сохранение данных в JSON
@@ -8,40 +11,57 @@ def save_to_json(data, file_name: str):
         json.dump(data, file, ensure_ascii=False, indent=2)
 
 
-def conversion_class_to_json(data):
+def converting(data):
     """ 
-    Преобразование данных из классов в JSON
+    Конвертация в JSON
     """
+    def clear_attr(items):
+        return [
+                attr for attr in dir(items)
+                if "_" not in attr and "read" not in attr and "write" not in attr and "validate" not in attr]
+
     final_json = []
 
     for item in data:
         first_json = {}
 
-        # Получаем атрибуты объекта
-        attributes = dir(item)
-
         # Фильтруем аттрибуты, исключаем нежелательные
-        clear_attributes = [
-                attr for attr in attributes 
-                if "_" not in attr and "read" not in attr and "write" not in attr and "validate" not in attr]
+        clear_attributes = clear_attr(item)
         
         for attr in clear_attributes:
             value = getattr(item, attr)
 
-            # Проверяем тип значения и добавляем в JSON
-            if isinstance(value, (str, int)):
+            if value is None:
+                first_json[attr] = None
+
+            elif isinstance(value, (str, int, float, bool)):
+                first_json[attr] = value
+
+            elif isinstance(value, list):
+                first_json[attr] = value
+
+            elif isinstance(value, dict):
                 first_json[attr] = value
                 
             else:
                 two_json = []
-                two_clear = [attr for attr in dir(value) if "_" not in attr and "read" not in attr and "write" not in attr and "validate" not in attr]
+                two_clear = clear_attr(value)
+
                 for tw in two_clear:
 
                     value_two = getattr(value, tw)
-                    if isinstance(value_two, (str, int)):
-                        two_json.append({f'{tw}': str(value_two)})
+
+                    if value_two is None:
+                        two_json.append({f'{tw}': None})
+
+                    elif isinstance(value_two, (str, int, float, bool)):
+                        two_json.append({f'{tw}': value_two})
+
+                    elif isinstance(value_two[0], str):
+                        two_json.append({f'{tw}': value_two})
+
                     else:
-                        two_json.append({f"{tw}": str(value_two)})
+                        two_json.append({f"{tw}": converting(value_two)})
 
                 first_json[attr] = two_json
 
@@ -49,6 +69,6 @@ def conversion_class_to_json(data):
 
     return final_json
         
-
-        
+            
+            
     

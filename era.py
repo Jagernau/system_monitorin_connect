@@ -1,4 +1,4 @@
-from help_funcs import save_to_json, conversion_class_to_json
+from help_funcs import save_to_json, converting
 import mixins
 import json
 import requests
@@ -76,10 +76,18 @@ era = Era(login, password, based_adres, era_port)
 
 objects = era.get_era_objects()
 groups = era.get_era_groups()
+users = era.get_era_users()
 
-#groups_json = conversion_class_to_json(groups)
-objects_json = conversion_class_to_json(objects)
+#groups_json = converting(groups)
+#objects_json = converting(objects)
+users_json = converting(users)
     
-print(objects_json)
+#print(groups_json)
+#print(objects_json)
+print(users_json)
 
-save_to_json(objects_json, "era_all_objects_2")
+
+#save_to_json(groups_json, "era_all_groups_3")
+#save_to_json(objects_json, "era_all_objects_3")
+save_to_json(users_json, "era_all_users_3")
+
