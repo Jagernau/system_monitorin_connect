@@ -1,4 +1,4 @@
-from help_funcs import save_to_json
+from help_funcs import save_to_json, conversion_class_to_json
 import mixins
 import json
 import requests
@@ -76,36 +76,10 @@ era = Era(login, password, based_adres, era_port)
 
 objects = era.get_era_objects()
 groups = era.get_era_groups()
-users = era.get_era_users()
 
-for i in objects:
-    print(i.__dir__())
-    print(getattr(i, 'name'))
-
-
-
-
+#groups_json = conversion_class_to_json(groups)
+objects_json = conversion_class_to_json(objects)
     
-# def get_era_data(login: str, password: str, thrif_class_client):
-#
-#     url = "monitoring.aoglonass.ru"
-#     ssl_context = ssl.create_default_context()
-#     ssl_context.check_hostname = False
-#     ssl_context.verify_mode = ssl.CERT_NONE 
-#
-#     transport = TSSLSocket.TSSLSocket(url, 19991, ssl_context=ssl_context)
-#
-#     transport = TTransport.TFramedTransport(transport)
-#     protocol = TBinaryProtocol.TBinaryProtocol(transport)
-#     open = transport.open()
-#     client: Client = thrif_class_client(protocol)
-#     session_id = client.login(login, password, True)
-#     parent_id = client.getCurrentUser(session_id)
-#     objects = client.getChildrenMonitoringObjects(session_id, parent_id.parentGroupId, True)
-#     groups = client.getChildrenGroups(session_id, parent_id.parentGroupId, True)
-#     users = client.getChildrenUsers(session_id, parent_id.parentGroupId, True)
-#     transport.close()
-#     return [objects, groups, users]
-#
-# era_data = get_era_data(login, password, Client)
-# print(era_data)
+print(objects_json)
+
+save_to_json(objects_json, "era_all_objects_2")
