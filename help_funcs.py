@@ -1,6 +1,8 @@
 import json
 
-from thrif.dispatch.server.thrif.backend.DispatchBackend import Client
+from datetime import datetime, timezone, timedelta
+
+import datetime as dt
 
 
 def save_to_json(data, file_name: str):
@@ -38,7 +40,10 @@ def converting(data):
                 first_json[attr] = value
 
             elif isinstance(value, list):
-                first_json[attr] = value
+                if len(value) >= 1 and isinstance(value[0], (str, int, float, bool)):
+                    first_json[attr] = value
+                else:
+                    first_json[attr] = converting(value)
 
             elif isinstance(value, dict):
                 first_json[attr] = value
@@ -71,4 +76,34 @@ def converting(data):
         
             
             
-    
+
+def current_time():
+    """ 
+    Получение текущего времени, но + 3 часа тк время линукс всегда меньше на 3часа
+    """
+    current_time = datetime.now(timezone.utc)
+
+    new_time = current_time + timedelta(hours=3)
+
+    # Форматируем время в нужный формат
+    formatted_time = new_time.strftime('%Y-%m-%dT%H:%M:%S')
+    return formatted_time
+
+def current_time_past_tree():
+    """ 
+    Получение прошедшего времени, но - 3 часа
+    """
+    current_time = datetime.now(timezone.utc)
+
+    new_time = current_time - timedelta(hours=3)
+
+    # Форматируем время в нужный формат
+    formatted_time = new_time.strftime('%Y-%m-%dT%H:%M:%S')
+    return formatted_time
+
+
+def get_current_timestamp_utc() -> str:
+    now = dt.datetime.utcnow()
+    timestamp = "/Date(" + str(int(now.timestamp() * 1000)) + ")/"
+    return timestamp
+
