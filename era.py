@@ -73,7 +73,11 @@ class Era(mixins.MixInSystemMonitoring):
                 current_time()  # Конец
                 )
         self.transport.close()
-        return converting(object_event)[-1]
+        object_info = converting(object_event)
+        if len(object_info) >= 1:
+            return object_info[-1]
+        else:
+            return []
 
 
     def get_era_groups(self):
