@@ -146,9 +146,13 @@ token = scout_local.token()
 
 #Объекты
 scout_units = ScoutLocalUnits(scout_local) # UNITS
-all_units = scout_units.get_all_units(token) # Все объекты
-detail_online = scout_units.get_detail_online_data(token, token) # Детально с онлайн данными по объектам
-print(detail_online)
+#all_units = scout_units.get_all_units(token) # Все объекты
+
+print(scout_units.subscribe_detail_online_data(token, ["919", "920"]))
+
+
+#detail_online = scout_units.get_detail_online_data(token, token) # Детально с онлайн данными по объектам
+#print(detail_online)
 
 #detail_online = scout_units.get_detail_online_data(token)
 
@@ -156,8 +160,8 @@ print(detail_online)
 #save_to_json(all_units,'scout_local_all_units')
 
 #Группы объектов
-#scout_groups = ScoutLocalGroups(scout_local)
-#all_groups = scout_groups.get_all_groups_units(token)
+# scout_groups = ScoutLocalGroups(scout_local)
+# all_groups = scout_groups.get_all_groups_units(token)
 # print(all_groups)
-# save_to_json(all_groups,'scout_local_all_groups')
+# save_to_json(all_groups,'scout_local_all_objects_groups')
 #print(scout_units.subscribe_detail_online_data(token, ["919", "920"]))
