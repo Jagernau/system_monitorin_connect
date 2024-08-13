@@ -1,8 +1,11 @@
 certifi==2024.6.2
 charset-normalizer==3.3.2
+future==1.0.0
 idna==3.7
 python-dotenv==1.0.1
 requests==2.32.3
+simplejson==3.19.2
 six==1.16.0
 thrift==0.20.0
 urllib3==2.2.2
+wialon==1.1.3
