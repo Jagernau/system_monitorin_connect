@@ -111,13 +111,17 @@ class WialonLocal:
         self.sdk.logout()
         return groups
 
-    def get_all_accounts(self, token: str):
+    def get_all_accounts(self, token: str, itemId: int):
         """
         Метод получения всех аккаунтов Wialon Local способом поиска
         """
         self.sdk.login(str(token))
-        reso = self.sdk.account_get_account_data({'itemId': 26})
+        reso = self.sdk.account_get_account_data({
+            "itemId": itemId,
+            "type": 5
+            })
         self.sdk.logout()
+        del reso["services"]
         return reso
 
 
@@ -138,6 +142,7 @@ wialon_local = WialonLocal(wialon_local_based_adress, int(wialon_local_port))
 # print(local_groups)
 # save_to_json(local_groups, "wialon_local_all_groups")
 
-# Учётки билинга
-local_reso = wialon_local.get_all_accounts(wialon_local_token)
-print(local_reso)
+#Учётки билинга
+local_accs = wialon_local.get_all_accounts(wialon_local_token, 26)
+print(local_accs)
+save_to_json(local_accs, "wialon_local_all_accounts")
