@@ -36,4 +36,8 @@
     SCOUT_LOCAL_PASSWORD=пароль пользователя СКАУТ локал
     SCOUT_LOCAL_BASED_ADRESS=адрес сайта СКАУТ локал
     SCOUT_LOCAL_PORT=порт для подключения СКАУТ локал
+
+    WIALON_LOCAL_TOKEN=токен получен от wialon https://<адрес локала>/login.html?client_id=wialon&access_type=-1&activation_time=0&duration=0
+    WIALON_LOCAL_BASED_ADRESS=адрес Wialon local
+    WIALON_LOCAL_PORT=порт Wialon local
     ```

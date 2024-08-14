@@ -72,8 +72,6 @@ class WialonLocal:
         # 1 базовый +
         # 4 билинг
         # 256 другие св-ва 
-        # 
-        # 
         'flags': 261, 
         'from': 0,
         'to': 0
@@ -99,9 +97,6 @@ class WialonLocal:
         'force': 1,
         # 1 базовый +
         # 4 билинг
-        # 
-        # 
-        # 
         'flags': 5, 
         'from': 0,
         'to': 0
@@ -111,18 +106,71 @@ class WialonLocal:
         self.sdk.logout()
         return groups
 
-    def get_all_accounts(self, token: str, itemId: int):
+    def get_all_retrans(self, token: str):
         """
-        Метод получения всех аккаунтов Wialon Local способом поиска
+        Метод получения всех Ретрансляторов Wialon Local способом поиска
+        """
+        parameters_retrans = {
+        'spec':{
+          'itemsType': "avl_retranslator",
+          'propName': "sys_name",
+          'propValueMask': "*",
+          'sortType': "sys_name",
+          'or_logic': 0
+        },
+        'force': 1,
+        # 1 базовый +
+        # 4 билинг
+        # 256 конфигурация +
+        # 512 объекты
+        'flags': 773, 
+        'from': 0,
+        'to': 0
+        }
+        self.sdk.login(str(token))
+        groups = self.sdk.core_search_items(parameters_retrans)
+        self.sdk.logout()
+        return groups
+
+
+    def get_all_resources(self, token: str):
+        """
+        Метод получения всех Ресурсов Wialon Local способом поиска
+        """
+        parameters_resourc = {
+        'spec':{
+          'itemsType': "avl_resource",
+          'propName': "sys_name",
+          'propValueMask': "*",
+          'sortType': "sys_name",
+          'or_logic': 0
+        },
+        'force': 1,
+        # 1 базовый +
+        # 4 билинг
+        'flags': 5, 
+        'from': 0,
+        'to': 0
+        }
+        self.sdk.login(str(token))
+        resources = self.sdk.core_search_items(parameters_resourc)
+        self.sdk.logout()
+        return resources
+
+
+
+    def get_detail_bill_accounts(self, token: str, itemId: int):
+        """
+        Метод получения детализации по билингового аккаунта Wialon Local способом поиска
         """
         self.sdk.login(str(token))
-        reso = self.sdk.account_get_account_data({
+        acc = self.sdk.account_get_account_data({
             "itemId": itemId,
             "type": 5
             })
         self.sdk.logout()
-        del reso["services"]
-        return reso
+        del acc["services"]
+        return acc
 
 
 wialon_local = WialonLocal(wialon_local_based_adress, int(wialon_local_port))
@@ -142,7 +190,19 @@ wialon_local = WialonLocal(wialon_local_based_adress, int(wialon_local_port))
 # print(local_groups)
 # save_to_json(local_groups, "wialon_local_all_groups")
 
+# Ретрансляторы
+# local_retrans = wialon_local.get_all_retrans(wialon_local_token)
+# print(local_retrans)
+# save_to_json(local_retrans, "wialon_local_all_retrans")
+
+# Ресурсы
+local_res = wialon_local.get_all_resources(wialon_local_token)
+print(local_res)
+save_to_json(local_res, "wialon_local_all_resources")
+
+
+
 #Учётки билинга
-local_accs = wialon_local.get_all_accounts(wialon_local_token, 26)
-print(local_accs)
-save_to_json(local_accs, "wialon_local_all_accounts")
+# local_accs = wialon_local.get_detail_bill_accounts(wialon_local_token, 697)
+# print(local_accs)
+# save_to_json(local_accs, "wialon_local_detail_bill_account_697")
