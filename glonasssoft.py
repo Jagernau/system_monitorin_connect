@@ -52,7 +52,7 @@ class Glonasssoft(mixins.MixInSystemMonitoring):
         if response.status_code == 200:
             return response.json()
         else:
-            return response.text
+            raise Exception(response.text)
 
 
 class GlonasssUnits(Glonasssoft):
