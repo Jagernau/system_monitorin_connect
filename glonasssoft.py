@@ -18,6 +18,7 @@ class Glonasssoft(mixins.MixInSystemMonitoring):
 
     def token(self):
         """Получение Токена Глонассофт"""
+        time.sleep(1)
         url = f'{self.based_adres}v3/auth/login'
         data = {'login': self.login, 'password': self.password}
         headers = {'Content-type': 'application/json', 'accept': 'json'}
@@ -51,7 +52,7 @@ class Glonasssoft(mixins.MixInSystemMonitoring):
         if response.status_code == 200:
             return response.json()
         else:
-            return None
+            return response.text
 
 
 class GlonasssUnits(Glonasssoft):
@@ -87,6 +88,20 @@ class GlonasssUnits(Glonasssoft):
     def get_detail_vehicle_by_vehicleid(self, token: str, vehicleId: str):
         time.sleep(1)
         return self._get_request(f"{self.glonass_class.based_adres}v3/vehicles/{vehicleId}", token)
+
+    def create_unit(self, token, parentId: str, name: str, imei: str, device_type, model_id):
+        """ 
+        Метод создания объектов
+        """
+        time.sleep(2)
+        data = {
+                "parentId": parentId,
+                "name": name,
+                "imei": imei,
+                "deviceTypeId": device_type,
+                "modelId": model_id,
+                }
+        return self._post_request(f"{self.glonass_class.based_adres}v3/vehicles", token, data)
 
 
 class GlonasssAgents(Glonasssoft):
@@ -268,10 +283,10 @@ glonass = Glonasssoft(login, password, based_adres)
 
 token = glonass.token()
 
-#glonass_units = GlonasssUnits(glonass)
-#all_vehicles = glonass_units.get_all_vehicles(token)
-#details_vehicle = glonass_units.get_detail_vehicle_by_vehicleid(token,'202274')
-#all_vehicles_new = glonass_units.get_all_vehicles_new(token,"80eb1587-12cf-44d4-b0d0-c09b7ddf6110")
+glonass_units = GlonasssUnits(glonass)
+# all_vehicles = glonass_units.get_all_vehicles_old(token)
+# details_vehicle = glonass_units.get_detail_vehicle_by_vehicleid(token,'202274')
+# all_vehicles_new = glonass_units.get_all_vehicles_new(token,"80eb1587-12cf-44d4-b0d0-c09b7ddf6110")
 
 
 #glonass_agents = GlonasssAgents(glonass)
@@ -291,8 +306,8 @@ token = glonass.token()
 #details_model = models.get_detail_model_by_modelid(token, "f8f5b6f5-5f27-4c3a-9e6f-6d2e0d0e0c9e")
 
 
-retranlators = GlonasssRetranlators(glonass)
-client_retranlators = retranlators.get_client_retranlators(token, "Нижегородский_лесопожарный_центр") # нужно обращаться по конкретному клиенту
+# retranlators = GlonasssRetranlators(glonass)
+# client_retranlators = retranlators.get_client_retranlators(token, "Нижегородский_лесопожарный_центр") # нужно обращаться по конкретному клиенту
 #detail_retrans = retranlators.get_client_retranlators(token, "42e4cc27-f964-4aab-bbbd-62b216184c85")
 
 
@@ -302,7 +317,7 @@ client_retranlators = retranlators.get_client_retranlators(token, "Нижего�
 #devices_types = GlonasssDeviceTypes(glonass)
 #all_devices_types = devices_types.get_all_devices_types(token)
 
-print(client_retranlators)
+# print(client_retranlators)
 
 #save_to_json(client_retranlators,'glonasss_all_client_retranslators_Нижегородский_лесопожарный_центр')
 

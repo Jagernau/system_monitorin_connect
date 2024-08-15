@@ -107,3 +107,14 @@ def get_current_timestamp_utc() -> str:
     timestamp = "/Date(" + str(int(now.timestamp() * 1000)) + ")/"
     return timestamp
 
+
+def sorting_obj_from_cl_name(data_objs, data_usrs, name_cl):
+    sorted_objs = []
+    for obj in data_objs:
+        for usr in data_usrs:
+            if obj["crt"] == usr['id'] and name_cl in usr['nm']:
+                sorted_objs.append(obj)
+
+    return sorted_objs
+
+
