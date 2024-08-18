@@ -89,7 +89,15 @@ class GlonasssUnits(Glonasssoft):
         time.sleep(1)
         return self._get_request(f"{self.glonass_class.based_adres}v3/vehicles/{vehicleId}", token)
 
-    def create_unit(self, token, parentId: str, name: str, imei: str, device_type, model_id):
+    def create_unit(
+            self, 
+            token, 
+            parentId: str, 
+            name: str, 
+            imei: str, 
+            device_type, 
+            model_id, 
+            fields=None):
         """ 
         Метод создания объектов
         """
@@ -101,6 +109,8 @@ class GlonasssUnits(Glonasssoft):
                 "deviceTypeId": device_type,
                 "modelId": model_id,
                 }
+        if fields != None:
+            data["customFields"] = fields
         return self._post_request(f"{self.glonass_class.based_adres}v3/vehicles", token, data)
 
 

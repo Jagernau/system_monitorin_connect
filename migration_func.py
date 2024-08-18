@@ -33,11 +33,35 @@ def migration(
 
     for obj in tqdm.tqdm(sort_objs, desc="Процесс миграции..."):
 
-        count += 1 # Счётчик созданных объектов
-        if count > int(limitation):
-            break
+        # проверяет наличие ID объекта в файле
+        with open('created.txt') as f:
+            created_obj: list = f.read().split("\n")
+
+        # пропускает итерацию если такой объект есть в файле
+        if str(obj['id']) in created_obj:
+            continue
 
         if "agat" in obj["nm"]:
+
+            count += 1 # Счётчик созданных объектов
+            if count > int(limitation):
+                break
+
+            # Перекладывание полей
+            if len(obj['flds']) >= 1:
+                fields = []
+                for i in obj['flds']:
+                    fields.append(
+                            {
+                            'name': str(obj["flds"][i]['n']),
+                            'value': str(obj["flds"][i]['v']),
+                            'forClient': True,
+                            'forReport': True,
+                            'id': "ae955b54-0c15-4a41-b920-3c3aefc87a15"
+                            }
+                    )
+            else:
+                fields = None
 
             try:
                 result = glonass_units.create_unit(token, 
@@ -45,7 +69,8 @@ def migration(
                                           name=obj["nm"] + "_тест", 
                                           imei=obj["uid"], 
                                           device_type=31, 
-                                          model_id=model_id, 
+                                          model_id=model_id,
+                                          fields=fields
                                           )
                 my_logger.logger.info(f"Объект {obj['nm']}, создан {result}")
                 with open("created.txt", "a") as f:
