@@ -97,20 +97,19 @@ class GlonasssUnits(Glonasssoft):
             imei: str, 
             device_type, 
             model_id, 
-            fields=None):
+            fields):
         """ 
         Метод создания объектов
         """
-        time.sleep(2)
+        time.sleep(1)
         data = {
                 "parentId": parentId,
                 "name": name,
                 "imei": imei,
                 "deviceTypeId": device_type,
                 "modelId": model_id,
+                "customFields": fields
                 }
-        if fields != None:
-            data["customFields"] = fields
         return self._post_request(f"{self.glonass_class.based_adres}v3/vehicles", token, data)
 
 
