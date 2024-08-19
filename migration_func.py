@@ -1,5 +1,5 @@
 from wialon_host import wialon_hosting, wialon_hosting_token
-from help_funcs import sorting_obj_from_cl_name, save_to_json
+from help_funcs import sorting_obj_from_cl_name, save_to_json, adapt_wialon_fields_to_glonass
 from glonasssoft import glonass_units, token
 import my_logger
 import tqdm
@@ -47,21 +47,7 @@ def migration(
             if count > int(limitation):
                 break
 
-            # Перекладывание полей
-            if len(obj['flds']) >= 1:
-                fields = []
-                for i in obj['flds']:
-                    fields.append(
-                            {
-                            'name': str(obj["flds"][i]['n']),
-                            'value': str(obj["flds"][i]['v']),
-                            'forClient': True,
-                            'forReport': True,
-                            'id': "ae955b54-0c15-4a41-b920-3c3aefc87a15"
-                            }
-                    )
-            else:
-                fields = None
+            fields_comments = adapt_wialon_fields_to_glonass(obj)
 
             try:
                 result = glonass_units.create_unit(token, 
@@ -70,7 +56,7 @@ def migration(
                                           imei=obj["uid"], 
                                           device_type=31, 
                                           model_id=model_id,
-                                          fields=fields
+                                          fields=fields_comments
                                           )
                 my_logger.logger.info(f"Объект {obj['nm']}, создан {result}")
                 with open("created.txt", "a") as f:

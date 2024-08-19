@@ -117,4 +117,24 @@ def sorting_obj_from_cl_name(data_objs, data_usrs, name_cl):
 
     return sorted_objs
 
+def adapt_wialon_fields_to_glonass(wialon_obj):
+    """ 
+    Преобразование из Wialon полей в Глонассофт
+    wialon_obj: Объект Wialon
+    return: произвольные поля в Глонассофт
+    """
 
+    fields_comments = None
+    # Перекладывание полей
+    if len(wialon_obj['flds']) >= 1:
+        fields_comments = []
+        for i in wialon_obj['flds']:
+            fields_comments.append(
+                    {
+                    'name': str(wialon_obj["flds"][i]['n']),
+                    'value': str(wialon_obj["flds"][i]['v']).replace('"', ' ') if str(wialon_obj["flds"][i]['v']) != "" else "_",
+                    'forClient': True,
+                    'forReport': True
+                    }
+            )
+    return fields_comments
