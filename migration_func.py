@@ -75,7 +75,6 @@ if __name__ == "__main__":
     objs = wialon_hosting.get_all_units(wialon_hosting_token)
     usrs = wialon_hosting.get_all_users(wialon_hosting_token)
 
-# Сортировка по имени создателя
     parent_Id = "d086bd30-cf71-49da-8781-8cdb167007bb"
     name_cl = "agat"
     token_gl = token
