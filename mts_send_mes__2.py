@@ -58,11 +58,11 @@ def check_message(login, password, message_id):
 #     return response.text
 
 # Параметры отправки
-login = config.MTS_API_SMS_LOGIN
-password = config.MTS_API_SMS_PASSWORD
-naming = config.MTS_API_SMS_NAMING
-text_message = '*!EDITS TRANS:SRV1(FLEX,,,gw1.glonasssoft.ru,15003)' # Команда на перезапись сервера на Глонассофт Навтелеком
-to = config.MTS_API_SMS_TEST_TEL
-# Отправка сообщения
-message_id = send_mts_message(login, password, naming, to, text_message)
-print(message_id)
+# login = config.MTS_API_SMS_LOGIN
+# password = config.MTS_API_SMS_PASSWORD
+# naming = config.MTS_API_SMS_NAMING
+# text_message = '*!EDITS TRANS:SRV1(FLEX,,,gw1.glonasssoft.ru,15003)' # Команда на перезапись сервера на Глонассофт Навтелеком
+# to = config.MTS_API_SMS_TEST_TEL
+# # Отправка сообщения
+# message_id = send_mts_message(login, password, naming, to, text_message)
+# print(message_id)

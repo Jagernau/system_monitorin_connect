@@ -2,12 +2,16 @@ certifi==2024.6.2
 charset-normalizer==3.3.2
 click==8.1.7
 future==1.0.0
+greenlet==3.0.3
 idna==3.7
+mysql-connector-python==9.0.0
 python-dotenv==1.0.1
 requests==2.32.3
 simplejson==3.19.2
 six==1.16.0
+SQLAlchemy==2.0.32
 thrift==0.20.0
 tqdm==4.66.5
+typing_extensions==4.12.2
 urllib3==2.2.2
 wialon==1.1.3
