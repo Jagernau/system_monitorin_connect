@@ -57,6 +57,20 @@ class WialonHosting:
         self.sdk.logout()
         return units
 
+
+
+    def get_all_device_types(self, token: str):
+        """
+        Метод получения всех Типов терминалов
+        """
+        parameters_types = {
+          'filterType': "name",
+        }
+        self.sdk.login(str(token))
+        device_types = self.sdk.core_get_hw_types(parameters_types)
+        self.sdk.logout()
+        return device_types
+
     def get_all_users(self, token: str):
         """
         Метод получения всех юзеров Wialon hosting способом поиска
@@ -176,12 +190,18 @@ class WialonHosting:
 
 wialon_hosting = WialonHosting(wialon_hosting_based_adress, int(wialon_hosting_port))
 
-# Объекты
+#Объекты
 # hosting_units = wialon_hosting.get_all_units(wialon_hosting_token)
 # print(hosting_units)
 # save_to_json(hosting_units, "wialon_hosting_all_objects")
 
-# Юзеры
+
+#Типы терминалов
+# hosting_devices_types = wialon_hosting.get_all_device_types(wialon_hosting_token)
+# print(hosting_devices_types)
+# save_to_json(hosting_devices_types, "wialon_hosting_device_types")
+
+#Юзеры
 # hosting_users = wialon_hosting.get_all_users(wialon_hosting_token)
 # print(hosting_users)
 # save_to_json(hosting_users, "wialon_hosting_all_users__2")

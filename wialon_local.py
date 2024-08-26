@@ -56,6 +56,19 @@ class WialonLocal:
         self.sdk.logout()
         return units
 
+
+    def get_all_device_types(self, token: str):
+        """
+        Метод получения всех Типов терминалов
+        """
+        parameters_types = {
+          'filterType': "name",
+        }
+        self.sdk.login(str(token))
+        device_types = self.sdk.core_get_hw_types(parameters_types)
+        self.sdk.logout()
+        return device_types
+
     def get_all_users(self, token: str):
         """
         Метод получения всех юзеров Wialon Local способом поиска

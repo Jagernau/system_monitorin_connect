@@ -1,7 +1,7 @@
 from time import sleep
 from wialon_host import wialon_hosting, wialon_hosting_token
 from help_funcs import sorting_obj_from_cl_name, save_to_json, adapt_wialon_fields_to_glonass
-from glonasssoft import glonass_units, token
+from glonasssoft import glonass_units, token, devices_types 
 import my_logger
 import tqdm
 import sys
@@ -22,7 +22,8 @@ def migration(
         sms_api_login: str,
         sms_api_password: str,
         sms_api_name: str,
-        sms_comand: str
+        sms_comand: str,
+        wialon_devices_types
         ):
     """
     Миграция объектов на Глонассофт
@@ -38,6 +39,7 @@ def migration(
     sms_api_password: Пароль для отправки СМС
     sms_api_name: Имя для отправки СМС
     sms_comand: Команда для перепрограммирования
+    wialon_devices_types: Типы оборудования Wialon
     """
     sort_objs = sorting_obj_from_cl_name(data_objs=objs["items"], data_usrs=usrs["items"], name_cl=name_cl)
 
@@ -62,6 +64,13 @@ def migration(
             # Перенос произвольных полей в Глонассофт
             # Из Wialon
             fields_comments = adapt_wialon_fields_to_glonass(obj)
+
+            # Функция сопоставления оборудования
+            # Из Wialon в Глонассофт
+            glonass_devices = devices_types.get_all_devices_types(token)
+            wialon_devices = wialon_devices_types
+            wialon_obj_device_type = obj["hw"]
+            adapt_device_type_to_glonass = None
 
             # Создание объекта в Глонассофт
             try:
@@ -115,6 +124,7 @@ if __name__ == "__main__":
 # Получение всех Объектов Клиента Виалон
     objs = wialon_hosting.get_all_units(wialon_hosting_token)
     usrs = wialon_hosting.get_all_users(wialon_hosting_token)
+    wialon_devices = wialon_hosting.get_all_device_types(wialon_hosting_token)
 
     parent_Id = "d086bd30-cf71-49da-8781-8cdb167007bb"
     name_cl = "  " # Логин создателя объектов в Wialon
@@ -139,7 +149,8 @@ if __name__ == "__main__":
             sms_api_login=sms_api_login,
             sms_api_password=sms_api_password,
             sms_api_name=sms_api_name,
-            sms_comand=sms_comand
+            sms_comand=sms_comand,
+            wialon_devices_types=wialon_devices
             )
     sys.exit()
 

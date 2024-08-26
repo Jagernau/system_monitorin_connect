@@ -323,7 +323,7 @@ glonass_units = GlonasssUnits(glonass)
 #obj_rec = GlonasssRecyclebin(glonass)
 #all_vehicles_recyclebin = obj_rec.get_all_recyclebin(token)
 
-#devices_types = GlonasssDeviceTypes(glonass)
+devices_types = GlonasssDeviceTypes(glonass)
 #all_devices_types = devices_types.get_all_devices_types(token)
 
 # print(client_retranlators)

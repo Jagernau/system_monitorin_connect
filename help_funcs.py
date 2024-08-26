@@ -138,3 +138,9 @@ def adapt_wialon_fields_to_glonass(wialon_obj):
                     }
             )
     return fields_comments
+
+def adapt_wialon_devices_to_glonass(wialon_types, glonass_types, curent_obj_type):
+    """ 
+
+    """
+    pass
