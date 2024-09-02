@@ -8,7 +8,7 @@ import config
 user = str(config.SCOUT_LOCAL_LOGIN)
 pas = str(config.SCOUT_LOCAL_PASSWORD)
 bas = str(config.SCOUT_LOCAL_BASED_ADRESS)
-port = int(config.SCOUT_LOCAL_PORT)
+port = config.SCOUT_LOCAL_PORT if config.SCOUT_LOCAL_PORT else 443
 
 class ScoutLocal(mixins.MixInSystemMonitoring):
     """ 

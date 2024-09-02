@@ -19,7 +19,7 @@ from thrif.dispatch.server.thrif.backend.DispatchBackend import Client
 login = config.ERA_LOGIN
 password = config.ERA_PASSWORD
 based_adres = config.ERA_BASED_ADRESS
-era_port = int(config.ERA_PORT)
+era_port = config.ERA_PORT if config.ERA_PORT else 19990
 
 
 class Era(mixins.MixInSystemMonitoring):

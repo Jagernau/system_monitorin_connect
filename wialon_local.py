@@ -9,7 +9,7 @@ from wialon.sdk import WialonSdk
 
 wialon_local_token = config.WIALON_LOCAL_TOKEN
 wialon_local_based_adress = config.WIALON_LOCAL_BASED_ADRESS
-wialon_local_port = config.WIALON_LOCAL_PORT
+wialon_local_port = config.WIALON_LOCAL_PORT if config.WIALON_LOCAL_PORT else 443
 
 
 class WialonLocal:
