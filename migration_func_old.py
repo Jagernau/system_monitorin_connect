@@ -1,19 +1,13 @@
 from time import sleep
 from wialon_host import wialon_hosting, wialon_hosting_token
-from help_funcs import (
-        sorting_obj_from_cl_name,
-        save_to_json, 
-        adapt_wialon_fields_to_glonass,
-        adapt_wialon_devices_to_glonass
-                        )
-from glonasssoft import glonass_units, token, devices_types 
+from help_funcs import sorting_obj_from_cl_name, save_to_json, adapt_wialon_fields_to_glonass
+from glonasssoft import glonass_units, token
 import my_logger
 import tqdm
 import sys
 import crud
 import mts_send_mes__2
 import config
-import json
 
 # Миграция написанна
 
@@ -28,14 +22,12 @@ def migration(
         sms_api_login: str,
         sms_api_password: str,
         sms_api_name: str,
-        sms_comand: str,
-        wialon_devices_types,
-        addit_check=''
+        sms_comand: str
         ):
     """
     Миграция объектов на Глонассофт
     Создаёт копии объектов в Глонассофт
-    obj: Объекты wialon
+    objs: Объекты wialon
     usrs: Юзеры wialon
     parentId: ID родителя Глонассофт (Клиент)
     model_id: ID модели объекта Глонассофт
@@ -46,8 +38,6 @@ def migration(
     sms_api_password: Пароль для отправки СМС
     sms_api_name: Имя для отправки СМС
     sms_comand: Команда для перепрограммирования
-    wialon_devices_types: Типы оборудования Wialon
-    addit_check: Дополнительная проверка
     """
     sort_objs = sorting_obj_from_cl_name(data_objs=objs["items"], data_usrs=usrs["items"], name_cl=name_cl)
 
@@ -63,8 +53,7 @@ def migration(
         if str(obj['id']) in created_obj:
             continue
 
-        
-        if str(addit_check) in obj["nm"]:
+        if "agat" in obj["nm"]:
 
             count += 1 # Счётчик созданных объектов
             if count > int(limitation):
@@ -74,24 +63,13 @@ def migration(
             # Из Wialon
             fields_comments = adapt_wialon_fields_to_glonass(obj)
 
-            # Функция сопоставления оборудования
-            #Из Wialon в Глонассофт
-            glonass_devices = devices_types.get_all_devices_types(token)
-            wialon_devices = wialon_devices_types
-            wialon_obj_device_type = obj["hw"]
-            adapt_device_type_to_glonass = adapt_wialon_devices_to_glonass(wialon_devices, glonass_devices, wialon_obj_device_type) # адаптация типа терминала под Глонассофт
-
-
-            # если тип терминала не определился, делаем по BCE -- 64
-            adap_type = int(adapt_device_type_to_glonass) if adapt_device_type_to_glonass != None else int(64)
-
             # Создание объекта в Глонассофт
             try:
                 result = glonass_units.create_unit(token, 
                                           parentId=parent_Id, 
                                           name=obj["nm"] + "_тест", 
                                           imei=obj["uid"], 
-                                          device_type=adap_type, 
+                                          device_type=31, 
                                           model_id=model_id,
                                           fields=fields_comments
                                           )
@@ -103,7 +81,7 @@ def migration(
                 my_logger.logger.error(e)
                 with open("not_created.txt", "a") as f:
                     f.write(f"{obj['id']}\n")
-
+            
             # Блок перепрограммирования терминала
             try:
                 # Получение телефона из базы данных такого imei
@@ -134,46 +112,22 @@ def migration(
 if __name__ == "__main__":
 
 
-    # Получение всех Объектов, Пользователей, Типов терминалов
-    try:
-        objs = wialon_hosting.get_all_units(wialon_hosting_token)
-        usrs = wialon_hosting.get_all_users(wialon_hosting_token)
-        wialon_devices = wialon_hosting.get_all_device_types(wialon_hosting_token)
+# Получение всех Объектов Клиента Виалон
+    objs = wialon_hosting.get_all_units(wialon_hosting_token)
+    usrs = wialon_hosting.get_all_users(wialon_hosting_token)
 
-    # Если в подключении к Wialon возникла ошибка
-    except:
-        # Объекты из файла JSON
-        with open('reserv_json_data/wialon_hosting_all_objects.json', 'r', ) as file:
-            file_obj = json.load(file)
-        objs = file_obj
-
-
-        # Пользователи из файла JSON
-        with open('reserv_json_data/wialon_hosting_all_users.json', 'r', ) as file:
-            file_usr = json.load(file)
-        usrs = file_usr
-
-
-        # Типы терминалов из файла JSON
-        with open('reserv_json_data/wialon_hosting_device_types.json', 'r', ) as file:
-            file_types = json.load(file)
-        wialon_devices = file_types
-
-
-
-    parent_Id = "adb3a85c-b79e-44c1-bce5-dce6ef3ac00b" # ID клиента Глонассофт
-    name_cl = "test_IT" # Логин создателя объектов в Wialon
+    parent_Id = "d086bd30-cf71-49da-8781-8cdb167007bb"
+    name_cl = "  " # Логин создателя объектов в Wialon
     token_gl = token
-    model_id="d2c04fab-093a-4d35-a1f2-432a168800cb" # ID модели ТС
-    limitation = 10 # Ограничение выгрузки
+    model_id="2a8c306b-fad0-45ff-addd-1bb0cdaea344"
+    limitation = 10
     sms_api_login = config.MTS_API_SMS_LOGIN
     sms_api_password = config.MTS_API_SMS_PASSWORD
     sms_api_name = config.MTS_API_SMS_NAMING
     sms_comand = '*!EDITS TRANS:SRV1(FLEX,,,gw1.glonasssoft.ru,15003)'
-    dop_check = 'test_'
 
 
-    # Миграция
+# Миграция
     migration(
             objs=objs, 
             usrs=usrs, 
@@ -185,9 +139,7 @@ if __name__ == "__main__":
             sms_api_login=sms_api_login,
             sms_api_password=sms_api_password,
             sms_api_name=sms_api_name,
-            sms_comand=sms_comand,
-            wialon_devices_types=wialon_devices,
-            addit_check=dop_check
+            sms_comand=sms_comand
             )
     sys.exit()
 

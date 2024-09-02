@@ -46,8 +46,9 @@ class WialonLocal:
         # 1 базовый +
         # 4 свойства билинга +
         # 128 админ записи +
-        # 256 доп свойства 
-        'flags': 1413, 
+        # 256 доп свойства + 
+        # 8 Произвольные поля
+        'flags': 1421, 
         'from': 0,
         'to': 0
         }
@@ -193,6 +194,12 @@ wialon_local = WialonLocal(wialon_local_based_adress, int(wialon_local_port))
 #print(local_units)
 #save_to_json(local_units, "wialon_local_all_objects")
 
+#Типы терминалов
+# local_devices_types = wialon_local.get_all_device_types(wialon_local_token)
+# print(local_devices_types)
+# save_to_json(local_devices_types, "wialon_local_device_types")
+
+
 # Юзеры
 # local_users = wialon_local.get_all_users(wialon_local_token)
 # print(local_users)
@@ -209,9 +216,9 @@ wialon_local = WialonLocal(wialon_local_based_adress, int(wialon_local_port))
 # save_to_json(local_retrans, "wialon_local_all_retrans")
 
 # Ресурсы
-local_res = wialon_local.get_all_resources(wialon_local_token)
-print(local_res)
-save_to_json(local_res, "wialon_local_all_resources")
+# local_res = wialon_local.get_all_resources(wialon_local_token)
+# print(local_res)
+# save_to_json(local_res, "wialon_local_all_resources")
 
 
 

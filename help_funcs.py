@@ -4,12 +4,22 @@ from datetime import datetime, timezone, timedelta
 
 import datetime as dt
 
+import time
+
+from jsonpath_ng import jsonpath, parse
 
 def save_to_json(data, file_name: str):
     """ 
     Сохранение данных в JSON
     """
     with open(f'json_data/{file_name}.json', 'w', encoding='utf-8') as file:
+        json.dump(data, file, ensure_ascii=False, indent=2)
+
+def reserv_data_to_json(data, file_name: str):
+    """ 
+    Сохранение данных в JSON для резервного восстановления
+    """
+    with open(f'reserv_json_data/{file_name}.json', 'w', encoding='utf-8') as file:
         json.dump(data, file, ensure_ascii=False, indent=2)
 
 
@@ -139,8 +149,65 @@ def adapt_wialon_fields_to_glonass(wialon_obj):
             )
     return fields_comments
 
+def remove_digits(input_string):
+    """
+    Удаляет все цифры из строки.
+    
+    input_string: str - входная строка
+    Возвращает: str - строка без цифр
+    """
+    return input_string.replace('0', '').replace('1', '').replace('2', '').replace('3', '').replace('4', '').replace('5', '').replace('6', '').replace('7', '').replace('8', '').replace('9', '')
+
+
+
 def adapt_wialon_devices_to_glonass(wialon_types, glonass_types, curent_obj_type):
     """ 
-
+    Выдаёт тип терминала для Glonasssoft соответствующий Wialon -> int|none
+    wialon_types: типы терминалов Wialon
+    glonass_types: типы терминалов Glonasssoft
+    curent_obj_type: текущий тип терминала: int
     """
-    pass
+    similar_device_types = []
+    for wialon_type in wialon_types:
+        if curent_obj_type == wialon_type['id']:
+            name_type_device_first_val = str(wialon_type['name']).split(' ')[0]
+            for glonass_type in glonass_types:
+                if remove_digits(name_type_device_first_val.lower()) in glonass_type['deviceTypeName'].lower():
+                    similar_device_types.append(glonass_type["deviceTypeId"])
+
+    if len(similar_device_types) >= 1:
+        return similar_device_types[0]
+
+    else:
+        return None
+
+
+def get_current_unix_time():
+    # Получаем текущее время в формате Unix
+    unix_time = int(time.time())
+    return unix_time
+
+
+def subtract_time_from_unix(unix_time, seconds):
+    """
+    Уменьшает заданное количество секунд от метки времени Unix.
+
+    :param unix_time: Время в формате Unix (количество секунд с 1 января 1970 года).
+    :param seconds: Количество секунд, которое нужно вычесть.
+    :return: Обновленная метка времени Unix.
+    """
+    return unix_time - seconds
+
+def search_get_comand_result(json_data):
+    result = []
+    for i in json_data["messages"]:
+        if "cmd_ans" in i["p"]:
+            result.append(i["p"]["cmd_ans"])
+        
+    if len(result) >= 1:
+        return result[-1]
+
+    else:
+        return None
+
+

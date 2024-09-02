@@ -1,11 +1,11 @@
-from help_funcs import save_to_json
+from help_funcs import save_to_json, reserv_data_to_json, get_current_unix_time, search_get_comand_result
 import mixins
 import json
 import requests
 import config
 import time
-
 from wialon.sdk import WialonSdk
+
 
 wialon_hosting_token = config.WIALON_HOSTING_TOKEN
 wialon_hosting_based_adress = config.WIALON_HOSTING_BASED_ADRESS
@@ -47,8 +47,9 @@ class WialonHosting:
         # 4 свойства билинга +
         # 128 админ записи +
         # 256 доп свойства +
-        # 8 Произвольные поля
-        'flags': 1421, 
+        # 8 Произвольные поля +
+        # 4096
+        'flags': 5517, 
         'from': 0,
         'to': 0
         }
@@ -187,6 +188,76 @@ class WialonHosting:
         del acc["services"]
         return acc
 
+    def create_terminal_comand(self, token: str, obj_id):
+        """
+        Метод создания комманды для отправки через Wialon
+        """
+        time.sleep(3)
+        self.sdk.login(str(token))
+        acc = self.sdk.unit_update_command_definition({
+             "itemId": int(obj_id),
+#             "id":<long>,
+             "callMode": "create",
+             "n": "Get_ICCID_one",
+             "c": 'custom_msg',
+             "l": '',
+             "p": '*?ICCID',
+             # 34359738368 + создание редактирование команд
+             # 17179869184 + просмотр команд
+             # 16777216 + выполнение команд
+             "a": int(51556384768)})
+        time.sleep(2)
+        self.sdk.logout()
+        return acc
+
+    def exec_terminal_comand(self, token: str, obj_id):
+        """
+        Метод отправки комманды команды через Wialon
+        """
+#        time.sleep(7)
+        self.sdk.login(str(token))
+        comand = self.sdk.unit_exec_cmd({
+            "itemId": int(obj_id),
+            "commandName": "Get_ICCID_one",
+            "linkType": '',
+            "param": "",
+            "timeout": int(50),
+            "flags": int(0)
+             })
+#        time.sleep(2)
+        self.sdk.logout()
+        return comand
+
+    # def get_terminal_result_data(self, token: str, obj_id, comand_id):
+    #     """
+    #     Метод получение ответа от терминала через Wialon
+    #     """
+    #     self.sdk.login(str(token))
+    #     comand_result = self.sdk.unit_get_command_definition_data({
+    #         "itemId": int(obj_id),
+    #         "col":[int(comand_id),]
+    #          })
+    #     self.sdk.logout()
+    #     return comand_result
+
+    def get_last_masseges_data(self, token: str, obj_id, curent_time):
+        """
+        Метод получение сообщений от терминала Wialon
+        """
+        time.sleep(1)
+        self.sdk.login(str(token))
+        comand_result = self.sdk.messages_load_last({
+            "itemId": int(obj_id),
+            "lastTime": curent_time,
+            "lastCount": 3000,
+            "flags": 512,
+            "flagsMask": int(0),
+            "loadCount": 3000
+             })
+        self.sdk.logout()
+        time.sleep(2)
+        return comand_result
+
 
 wialon_hosting = WialonHosting(wialon_hosting_based_adress, int(wialon_hosting_port))
 
@@ -194,38 +265,67 @@ wialon_hosting = WialonHosting(wialon_hosting_based_adress, int(wialon_hosting_p
 # hosting_units = wialon_hosting.get_all_units(wialon_hosting_token)
 # print(hosting_units)
 # save_to_json(hosting_units, "wialon_hosting_all_objects")
+# reserv_data_to_json(hosting_units, "wialon_hosting_all_objects") # Резервные файлы Wialon
 
 
 #Типы терминалов
 # hosting_devices_types = wialon_hosting.get_all_device_types(wialon_hosting_token)
 # print(hosting_devices_types)
 # save_to_json(hosting_devices_types, "wialon_hosting_device_types")
+# reserv_data_to_json(hosting_devices_types, "wialon_hosting_device_types")
 
 #Юзеры
 # hosting_users = wialon_hosting.get_all_users(wialon_hosting_token)
 # print(hosting_users)
-# save_to_json(hosting_users, "wialon_hosting_all_users__2")
-#
+# save_to_json(hosting_users, "wialon_hosting_all_users")
+# reserv_data_to_json(hosting_users, "wialon_hosting_all_users")
+
+
 # Группы объектов
 # hosting_groups = wialon_hosting.get_all_units_groups(wialon_hosting_token)
 # print(hosting_groups)
 # save_to_json(hosting_groups, "wialon_hosting_all_groups")
+# reserv_data_to_json(hosting_groups, "wialon_hosting_all_groups")
 
 # Ретрансляторы
 # hosting_retrans = wialon_hosting.get_all_retrans(wialon_hosting_token)
 # print(hosting_retrans)
 # save_to_json(hosting_retrans, "wialon_hosting_all_retrans")
+# reserv_data_to_json(hosting_retrans, "wialon_hosting_all_retrans")
 
 # Ресурсы
 # hosting_res = wialon_hosting.get_all_resources(wialon_hosting_token)
 # print(hosting_res)
 # save_to_json(hosting_res, "wialon_hosting_all_resources")
-
-
+# reserv_data_to_json(hosting_res, "wialon_hosting_all_resources")
 
 #Учётки билинга
 # hosting_accs = wialon_hosting.get_detail_bill_accounts(wialon_hosting_token, 697)
 # print(hosting_accs)
 # save_to_json(hosting_accs, "wialon_hosting_detail_bill_account_697")
 
+#Создание команды
+# wialon_create_comand = wialon_hosting.create_terminal_comand(wialon_hosting_token, 27471923)
+# print(wialon_create_comand)
+# save_to_json(wialon_create_comand, "wialon_create_comand_27471923")
 
+
+# #Отправка команды
+# wialon_exec_comand = wialon_hosting.exec_terminal_comand(wialon_hosting_token, 27471923)
+# print(wialon_exec_comand)
+# save_to_json(wialon_create_comand, "wialon_create_comand_27471923")
+
+# # # Получение ответа
+# wialon_result_comand = wialon_hosting.get_terminal_result_data(wialon_hosting_token, 27471923, 1)
+# print(wialon_result_comand)
+# save_to_json(wialon_create_comand, "wialon_create_comand_27471923")
+
+
+# # Получение сообщений
+# request_time = int(get_current_unix_time()) - 9000
+# wialon_message_comand = wialon_hosting.get_last_masseges_data(wialon_hosting_token, 27471923, request_time)
+# search_get_comand_result(wialon_message_comand)
+
+# print(wialon_message_comand)
+# save_to_json(wialon_message_comand, "wialon_messages_27471923")
+#

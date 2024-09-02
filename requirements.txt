@@ -4,7 +4,10 @@ click==8.1.7
 future==1.0.0
 greenlet==3.0.3
 idna==3.7
+jsonpath-ng==1.6.1
 mysql-connector-python==9.0.0
+ply==3.11
+PySocks==1.7.1
 python-dotenv==1.0.1
 requests==2.32.3
 simplejson==3.19.2
