@@ -49,7 +49,9 @@ services:
       ENV MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       ENV MYSQL_PORT: ${MYSQL_PORT}
       ENV API_TOKEN: ${API_TOKEN}
-    command: uvicorn api_fast_get_json:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn api_fast_get_json:app --reload
+    expose:
+      - 8000
     networks:
       - migration_network
 
