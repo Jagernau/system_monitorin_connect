@@ -6,26 +6,57 @@ import datetime as dt
 
 import time
 
-from jsonpath_ng import jsonpath, parse
+import os
 
 def save_to_json(data, file_name: str):
     """ 
     Сохранение данных в JSON
     """
+    directory = "json_data"
+
+# Проверяем, существует ли папка
+    if not os.path.exists(directory):
+        # Если нет, создаем папку
+        os.makedirs(directory)
+    else:
+        pass
+
     with open(f'json_data/{file_name}.json', 'w', encoding='utf-8') as file:
         json.dump(data, file, ensure_ascii=False, indent=2)
+
+
 
 def reserv_data_to_json(data, file_name: str):
     """ 
     Сохранение данных в JSON для резервного восстановления
     """
+    directory = "reserv_json_data"
+
+# Проверяем, существует ли папка
+    if not os.path.exists(directory):
+        # Если нет, создаем папку
+        os.makedirs(directory)
+    else:
+        pass
+
     with open(f'reserv_json_data/{file_name}.json', 'w', encoding='utf-8') as file:
         json.dump(data, file, ensure_ascii=False, indent=2)
+
+
 
 def clients_data_to_json(data, file_name: str):
     """ 
     Сохранение клиентских JSON данных для резервного восстановления
     """
+    directory = "files"
+
+# Проверяем, существует ли папка
+    if not os.path.exists(directory):
+        # Если нет, создаем папку
+        os.makedirs(directory)
+    else:
+        pass
+
     with open(f'files/{file_name}.json', 'w', encoding='utf-8') as file:
         json.dump(data, file, ensure_ascii=False, indent=2)
 
