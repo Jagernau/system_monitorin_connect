@@ -52,3 +52,5 @@ MYSQL_PORT=val['MYSQL_PORT']
 
 connection_mysql = f"mysql+mysqlconnector://{MYSQL_USER}:{MYSQL_PASSWORD}@{DB_HOST}:{MYSQL_PORT}/{MYSQL_DB_NAME}"
 
+API_TOKEN=val['API_TOKEN']
+

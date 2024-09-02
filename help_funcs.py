@@ -22,6 +22,14 @@ def reserv_data_to_json(data, file_name: str):
     with open(f'reserv_json_data/{file_name}.json', 'w', encoding='utf-8') as file:
         json.dump(data, file, ensure_ascii=False, indent=2)
 
+def clients_data_to_json(data, file_name: str):
+    """ 
+    Сохранение клиентских JSON данных для резервного восстановления
+    """
+    with open(f'files/{file_name}.json', 'w', encoding='utf-8') as file:
+        json.dump(data, file, ensure_ascii=False, indent=2)
+
+
 
 def converting(data):
     """ 
