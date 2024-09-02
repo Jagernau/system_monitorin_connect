@@ -62,39 +62,39 @@
     ```
 
 # Доп. функции
-    * Простейшая миграция объектов из wialon в глонасс, перенос произвольных полей.
-    * При необходимости, если не работает Wialon, можно выполнять запросы через Tor:
-        1. Установить Tor на компьютер: `sudo apt install tor`
-        2. Установить obfs4proxy для мостов на компьютер: `sudo apt install obfs4proxy`
-        3. Получить мосты.
-        4. Внести в Torrc `/etc/tor` необходимые данные:
-            ```
-            UseBridges 1
+* Простейшая миграция объектов из wialon в глонасс, перенос произвольных полей.
+* При необходимости, если не работает Wialon, можно выполнять запросы через Tor:
+    1. Установить Tor на компьютер: `sudo apt install tor`
+    2. Установить obfs4proxy для мостов на компьютер: `sudo apt install obfs4proxy`
+    3. Получить мосты.
+    4. Внести в Torrc `/etc/tor` необходимые данные:
+        ```
+        UseBridges 1
 
-            ClientTransportPlugin obfs4 exec /usr/bin/obfs4proxy
+        ClientTransportPlugin obfs4 exec /usr/bin/obfs4proxy
 
-            Bridge <Мосты>
-            ```
-        5. Внести изменения проксирования в стандартную библиотеку Wialon для Python:
-            ```
-            import socks
-            import socket
+        Bridge <Мосты>
+        ```
+    5. Внести изменения проксирования в стандартную библиотеку Wialon для Python:
+        ```
+        import socks
+        import socket
 
-            socks.set_default_proxy(socks.SOCKS5, "localhost", 9050)
-            socket.socket = socks.socksocket
+        socks.set_default_proxy(socks.SOCKS5, "localhost", 9050)
+        socket.socket = socks.socksocket
 
 
-            proxies = {
-                'http': 'socks5://localhost:9050',
-                'https': 'socks5://localhost:9050'
-            }
+        proxies = {
+            'http': 'socks5://localhost:9050',
+            'https': 'socks5://localhost:9050'
+        }
 
-            ...
+        ...
 
-            request = requests.post(url=self.base_url, params=parameters, proxies=proxies)
-            ...
+        request = requests.post(url=self.base_url, params=parameters, proxies=proxies)
+        ...
 
-            ```
+        ```
 ## Ввёл в код Мигратор.
 Требуется рефакторинг.
 
