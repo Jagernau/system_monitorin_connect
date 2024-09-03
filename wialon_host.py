@@ -11,7 +11,6 @@ wialon_hosting_token = config.WIALON_HOSTING_TOKEN
 wialon_hosting_based_adress = config.WIALON_HOSTING_BASED_ADRESS
 wialon_hosting_port = config.WIALON_HOSTING_PORT if config.WIALON_HOSTING_PORT else 443
 
-print(wialon_hosting_token)
 
 class WialonHosting:
     """ 
