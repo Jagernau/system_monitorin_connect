@@ -1,6 +1,8 @@
 #from dotenv import dotenv_values
 from os import environ as envi
+from dotenv import load_dotenv
 
+load_dotenv()
 
 #val = dotenv_values(".env")
 
