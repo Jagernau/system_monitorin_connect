@@ -7,7 +7,7 @@ from help_funcs import clients_data_to_json
 from wialon_host import wialon_hosting
 from wialon.sdk import WialonError, SdkException
 import config
-
+import os
 
 app = FastAPI()
 
@@ -30,17 +30,28 @@ async def get_wialon_units_json_file(client_token: ClientToken, token: str = Dep
     Отдаёт файл объектов
     """
     client_data = client_token.client_token
+    file_path = f"files/{client_data}_units.json"
+    
     try:
         obj_clients = wialon_hosting.get_all_units(str(client_data))
-        clients_data_to_json(obj_clients, f"{client_data}_units")   
+        clients_data_to_json(obj_clients, file_path)   
     except (Exception, WialonError, SdkException):
         raise HTTPException(status_code=404, detail="Not valid Client Token")
 
-    else:
-        try:
-            return FileResponse(f'files/{client_data}_units.json')
-        except:
-            raise HTTPException(status_code=404, detail="File not found")
+    # Используем FileResponse для отправки файла
+    try:
+        response = FileResponse(file_path, media_type='application/json')
+        response.headers["Content-Disposition"] = f"attachment; filename={client_data}_units.json"
+        
+        # Удаляем файл после отправки
+        @response.background
+        def remove_file():
+            if os.path.exists(file_path):
+                os.remove(file_path)
+
+        return response
+    except Exception:
+        raise HTTPException(status_code=404, detail="File not found")
 
 
 @app.post("/get_wialon_types_json/")

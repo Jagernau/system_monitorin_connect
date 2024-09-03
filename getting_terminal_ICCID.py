@@ -53,35 +53,35 @@ def get_iccid_imei_comand(
         if count > int(limitation):
             break
 
-        try:
-            create_result = wialon_hosting.create_terminal_comand(wialon_hosting_token, obj_id)
-            my_logger.logger.info(f"Созданна команда {create_result}")
-
-        except (Exception, WialonError, SdkException) as e:
-                my_logger.logger.error(e)
-
-        finally:
-
-            try:
-                exec_result = wialon_hosting.exec_terminal_comand(wialon_hosting_token, obj_id)
-                my_logger.logger.info(f"Отправленна команда {exec_result}")
-            except (Exception, WialonError, SdkException) as e:
-                my_logger.logger.error(e)
+        # try:
+        #     create_result = wialon_hosting.create_terminal_comand(wialon_hosting_token, obj_id)
+        #     my_logger.logger.info(f"Созданна команда {create_result}")
+        #
+        # except (Exception, WialonError, SdkException) as e:
+        #         my_logger.logger.error(e)
+        #
+        # finally:
+        #
+        #     try:
+        #         exec_result = wialon_hosting.exec_terminal_comand(wialon_hosting_token, obj_id)
+        #         my_logger.logger.info(f"Отправленна команда {exec_result}")
+        #     except (Exception, WialonError, SdkException) as e:
+        #         my_logger.logger.error(e)
 
             # finally:
-        # request_time = int(get_current_unix_time()) - 2000
-        # try:
-        #     wialon_message_comand = wialon_hosting.get_last_masseges_data(wialon_hosting_token, obj_id, request_time)
-        #     my_logger.logger.info(f"Ответ получен")
-        # except (Exception, WialonError, SdkException) as e:
-        #     my_logger.logger.error(e)
-        # else:
-        #     result_message = search_get_comand_result(wialon_message_comand)
-        #     if result_message != None:
-        #         with open("info_IMEI_ICCID_NAME.txt", "a") as f:
-        #             f.write(f"{obj_id};{obj_imei};{result_message};{obj_name}\n")
-        #         with open("requested_terms.txt", "a") as f:
-        #             f.write(f"{obj_imei}\n")
+        request_time = int(get_current_unix_time()) - 3000
+        try:
+            wialon_message_comand = wialon_hosting.get_last_masseges_data(wialon_hosting_token, obj_id, request_time)
+            my_logger.logger.info(f"Ответ получен")
+        except (Exception, WialonError, SdkException) as e:
+            my_logger.logger.error(e)
+        else:
+            result_message = search_get_comand_result(wialon_message_comand)
+            if result_message != None:
+                with open("AGAT_Connect_IMEI_ICCID_NAME.txt", "a") as f:
+                    f.write(f"{obj_id};{obj_imei};{result_message};{obj_name}\n")
+                with open("requested_terms.txt", "a") as f:
+                    f.write(f"{obj_imei}\n")
 
 
 
@@ -107,7 +107,7 @@ if __name__ == "__main__":
         usrs = file_usr
 
 #    dop_check = 'pagat_log'
-    name_cl = "pagat_log" # Логин создателя объектов в Wialon
+    name_cl = "agat_autokonnekt" # Логин создателя объектов в Wialon
     limitation = 3000 # Ограничение выгрузки
     
 

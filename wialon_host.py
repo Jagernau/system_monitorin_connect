@@ -206,7 +206,7 @@ class WialonHosting:
              # 17179869184 + просмотр команд
              # 16777216 + выполнение команд
              "a": int(51556384768)})
-        time.sleep(2)
+        time.sleep(3)
         self.sdk.logout()
         return acc
 
@@ -214,7 +214,7 @@ class WialonHosting:
         """
         Метод отправки комманды команды через Wialon
         """
-#        time.sleep(7)
+        time.sleep(2)
         self.sdk.login(str(token))
         comand = self.sdk.unit_exec_cmd({
             "itemId": int(obj_id),
@@ -224,7 +224,7 @@ class WialonHosting:
             "timeout": int(50),
             "flags": int(0)
              })
-#        time.sleep(2)
+        time.sleep(2)
         self.sdk.logout()
         return comand
 
