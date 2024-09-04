@@ -93,7 +93,8 @@ def migration(
                                           imei=obj["uid"], 
                                           device_type=adap_type, 
                                           model_id=model_id,
-                                          fields=fields_comments
+                                          fields=fields_comments,
+                                          sensors=None
                                           )
                 my_logger.logger.info(f"Объект {obj['nm']}, создан {result}")
                 with open("created.txt", "a") as f:

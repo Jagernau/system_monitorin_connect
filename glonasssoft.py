@@ -97,7 +97,9 @@ class GlonasssUnits(Glonasssoft):
             imei: str, 
             device_type, 
             model_id, 
-            fields):
+            fields,
+            sensors
+            ):
         """ 
         Метод создания объектов
         """
@@ -108,8 +110,15 @@ class GlonasssUnits(Glonasssoft):
                 "imei": imei,
                 "deviceTypeId": device_type,
                 "modelId": model_id,
-                "customFields": fields
+#                "customFields": fields
                 }
+
+        if fields != None:
+            data["customFields"] = fields
+
+        if sensors != None:
+            data["sensors"] = sensors
+
         return self._post_request(f"{self.glonass_class.based_adres}v3/vehicles", token, data)
 
 
@@ -294,7 +303,8 @@ token = glonass.token()
 
 glonass_units = GlonasssUnits(glonass)
 # all_vehicles = glonass_units.get_all_vehicles_old(token)
-# details_vehicle = glonass_units.get_detail_vehicle_by_vehicleid(token,'202274')
+# details_vehicle = glonass_units.get_detail_vehicle_by_vehicleid(token,'429052')
+# save_to_json(details_vehicle, "glonass_detail_vehicle")
 # all_vehicles_new = glonass_units.get_all_vehicles_new(token,"80eb1587-12cf-44d4-b0d0-c09b7ddf6110")
 
 
