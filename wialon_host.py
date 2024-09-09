@@ -188,20 +188,19 @@ class WialonHosting:
         del acc["services"]
         return acc
 
-    def create_terminal_comand(self, token: str, obj_id):
+    def create_terminal_comand(self, token: str, obj_id, comand_name, terminal_comand):
         """
         Метод создания комманды для отправки через Wialon
         """
-        time.sleep(3)
         self.sdk.login(str(token))
         acc = self.sdk.unit_update_command_definition({
              "itemId": int(obj_id),
 #             "id":<long>,
              "callMode": "create",
-             "n": "Get_ICCID_one",
+             "n": str(comand_name),
              "c": 'custom_msg',
              "l": '',
-             "p": '*?ICCID',
+             "p": str(terminal_comand),
              # 34359738368 + создание редактирование команд
              # 17179869184 + просмотр команд
              # 16777216 + выполнение команд
@@ -210,7 +209,7 @@ class WialonHosting:
         self.sdk.logout()
         return acc
 
-    def exec_terminal_comand(self, token: str, obj_id):
+    def exec_terminal_comand(self, token: str, obj_id, comand_name):
         """
         Метод отправки комманды команды через Wialon
         """
@@ -218,10 +217,10 @@ class WialonHosting:
         self.sdk.login(str(token))
         comand = self.sdk.unit_exec_cmd({
             "itemId": int(obj_id),
-            "commandName": "Get_ICCID_one",
+            "commandName": str(comand_name),
             "linkType": '',
             "param": "",
-            "timeout": int(50),
+            "timeout": int(20),
             "flags": int(0)
              })
         time.sleep(2)

@@ -192,6 +192,29 @@ def adapt_wialon_fields_to_glonass(wialon_obj):
             )
     return fields_comments
 
+
+def adapt_wialon_sensors_to_glonass(wialon_obj):
+    """ 
+    Преобразование из Wialon полей в Глонассофт
+    wialon_obj: Объект Wialon
+    return: датчики для Глонассофт
+    """
+
+    adapt_sensors = None
+    # Перекладывание полей
+    if len(wialon_obj['sens']) >= 1:
+        adapt_sensors = []
+        for i in wialon_obj['sens']:
+            adapt_sensors.append(
+                    {
+                    'name': str(wialon_obj["sens"][i]['n']),
+                    'value': str(wialon_obj["flds"][i]['v']).replace('"', ' ') if str(wialon_obj["flds"][i]['v']) != "" else "_",
+                    'forClient': True,
+                    'forReport': True
+                    }
+            )
+    return adapt_sensors
+
 def remove_digits(input_string):
     """
     Удаляет все цифры из строки.
@@ -223,6 +246,7 @@ def adapt_wialon_devices_to_glonass(wialon_types, glonass_types, curent_obj_type
 
     else:
         return None
+
 
 
 def get_current_unix_time():

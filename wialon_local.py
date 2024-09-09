@@ -190,8 +190,8 @@ class WialonLocal:
 wialon_local = WialonLocal(wialon_local_based_adress, int(wialon_local_port))
 
 # Объекты
-#local_units = wialon_local.get_all_units(wialon_local_token)
-#print(local_units)
+# local_units = wialon_local.get_all_units(wialon_local_token)
+# print(local_units)
 #save_to_json(local_units, "wialon_local_all_objects")
 
 #Типы терминалов

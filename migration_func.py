@@ -14,6 +14,7 @@ import crud
 import mts_send_mes__2
 import config
 import json
+import terminal_reprog 
 
 # Миграция написанна
 
@@ -29,6 +30,7 @@ def migration(
         sms_api_password: str,
         sms_api_name: str,
         sms_comand: str,
+        comand_name,
         wialon_devices_types,
         addit_check=''
         ):
@@ -85,6 +87,36 @@ def migration(
             # если тип терминала не определился, делаем по BCE -- 64
             adap_type = int(adapt_device_type_to_glonass) if adapt_device_type_to_glonass != None else int(64)
 
+            # Работа с датчиками
+            # Датчик зажигания по умолчанию
+            moto_sensor = [
+            {
+              "kind": "Simple",
+              "type": "Ignition",
+              "name": "Зажигание (0)",
+              "inputType": "Digital",
+              "inputNumber": 0,
+              "isInverted": False,
+              "disabled": False,
+              "gradeType": "Digital",
+              "showInTooltip": True,
+              "showLastValid": False,
+              "showAsDutOnGraph": False,
+              "showWithoutIgn": True,
+              "agrFunction": "SUM",
+              "customParams": {
+                "RemoveCode": "",
+                "RemoveSeconds": "",
+                "ValueOn": "Вкл.",
+                "ValueOff": "Выкл."
+              },
+              "summaryMaxValue": None,
+              "valueIntervals": []
+            },
+            ]
+
+
+
             # Создание объекта в Глонассофт
             try:
                 result = glonass_units.create_unit(token, 
@@ -94,7 +126,7 @@ def migration(
                                           device_type=adap_type, 
                                           model_id=model_id,
                                           fields=fields_comments,
-                                          sensors=None
+                                          sensors=moto_sensor
                                           )
                 my_logger.logger.info(f"Объект {obj['nm']}, создан {result}")
                 with open("created.txt", "a") as f:
@@ -126,6 +158,14 @@ def migration(
                         my_logger.logger.error(e)
                         with open("not_send_sms.txt", "a") as f:
                             f.write(f"{obj['id']} {obj['uid']} {tel_num}\n")
+                
+                # если нет телефона в БД_2, перепрограммируем через API Wialon
+                else:
+                    terminal_reprog.reprog_terminal(
+                            obj["id"],
+                            comand_name=comand_name,
+                            terminal_comand=sms_comand
+                            )
 
             except Exception as e:
                 my_logger.logger.error(e)
@@ -171,6 +211,7 @@ if __name__ == "__main__":
     sms_api_password = config.MTS_API_SMS_PASSWORD
     sms_api_name = config.MTS_API_SMS_NAMING
     sms_comand = '*!EDITS TRANS:SRV1(FLEX,,,gw1.glonasssoft.ru,15003)'
+    comand_name = "REPROG_SERV"
     dop_check = 'test_'
 
 
@@ -187,6 +228,7 @@ if __name__ == "__main__":
             sms_api_password=sms_api_password,
             sms_api_name=sms_api_name,
             sms_comand=sms_comand,
+            comand_name=comand_name,
             wialon_devices_types=wialon_devices,
             addit_check=dop_check
             )
