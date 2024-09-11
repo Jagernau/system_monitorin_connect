@@ -192,6 +192,7 @@ class WialonHosting:
         """
         Метод создания комманды для отправки через Wialon
         """
+        time.sleep(2)
         self.sdk.login(str(token))
         acc = self.sdk.unit_update_command_definition({
              "itemId": int(obj_id),
@@ -205,7 +206,7 @@ class WialonHosting:
              # 17179869184 + просмотр команд
              # 16777216 + выполнение команд
              "a": int(51556384768)})
-        time.sleep(3)
+        time.sleep(2)
         self.sdk.logout()
         return acc
 
@@ -243,7 +244,7 @@ class WialonHosting:
         """
         Метод получение сообщений от терминала Wialon
         """
-        time.sleep(1)
+        time.sleep(2)
         self.sdk.login(str(token))
         comand_result = self.sdk.messages_load_last({
             "itemId": int(obj_id),

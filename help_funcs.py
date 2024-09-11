@@ -195,7 +195,7 @@ def adapt_wialon_fields_to_glonass(wialon_obj):
 
 def adapt_wialon_sensors_to_glonass(wialon_obj):
     """ 
-    Преобразование из Wialon полей в Глонассофт
+    Преобразование из Wialon датчиков в Глонассофт
     wialon_obj: Объект Wialon
     return: датчики для Глонассофт
     """
@@ -246,6 +246,20 @@ def adapt_wialon_devices_to_glonass(wialon_types, glonass_types, curent_obj_type
 
     else:
         return None
+
+
+def get_wialon_devices_name(wialon_types, curent_obj_type):
+    """ 
+    Выдаёт имя терминала Wialon -> str
+    wialon_types: типы терминалов Wialon
+    curent_obj_type: текущий тип терминала: int
+    """
+    device_type_name = ""
+    for wialon_type in wialon_types:
+        if curent_obj_type == wialon_type['id']:
+            name_type_device_first_val = str(str(wialon_type['name'])).lower()
+            device_type_name = name_type_device_first_val
+    return device_type_name
 
 
 

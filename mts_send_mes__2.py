@@ -1,7 +1,9 @@
+from time import sleep
 import requests
 from requests.auth import HTTPBasicAuth
 
 import config
+import json
 
 def send_mts_message(login, password, naming, to, text_message):
     """ 
@@ -30,7 +32,7 @@ def send_mts_message(login, password, naming, to, text_message):
     }]
     }
     resp = requests.post(url , json=body, auth = HTTPBasicAuth(login, password))
-    result = resp.json()['messages'][0]['internal_id']
+    result = resp.json()
 
     with open("sends_messages.txt", "a") as f:
         f.write(f"{result}\n")
@@ -39,8 +41,8 @@ def send_mts_message(login, password, naming, to, text_message):
      
 def check_message(login, password, message_id):
    url = 'https://omnichannel.mts.ru/http-api/v1/messages/info'
-   body = {"int_ids": [str(message_id)]}
-   resp_info = requests.post(url , json=body, auth = HTTPBasicAuth(login, password))      
+   body = {"int_ids": [message_id]}
+   resp_info = requests.post(url , json=body, auth=HTTPBasicAuth(login, password))      
    return resp_info.text  
   
 # def check_message__get(login, password, naming, message_id):
@@ -57,12 +59,35 @@ def check_message(login, password, message_id):
 #     response = requests.request("GET", url, params=querystring)
 #     return response.text
 
+def full_send_message(login, password, naming, to, text_message):
+
+    """ 
+    Отправляет сообщение-команду на терминал по СМС API
+    Возвращает True, если статус СМС - отправленно,
+    Если терминал ответил ОК - В разработке.
+    login: Логин МТС АПИ
+    password: ПАРОЛЬ МТС АПИ
+    naming: Имя отправителя МТС АПИ
+    to: Номер телефона куда
+    text_message: Команда
+    """
+    result_send = send_mts_message(login, password, naming, to, text_message)
+    extracted_mess_id = result_send['messages'][0]['internal_id']
+
+
+
+
 # Параметры отправки
-# login = config.MTS_API_SMS_LOGIN
-# password = config.MTS_API_SMS_PASSWORD
-# naming = config.MTS_API_SMS_NAMING
-# text_message = '*!EDITS TRANS:SRV1(FLEX,,,gw1.glonasssoft.ru,15003)' # Команда на перезапись сервера на Глонассофт Навтелеком
-# to = config.MTS_API_SMS_TEST_TEL
-# # Отправка сообщения
-# message_id = send_mts_message(login, password, naming, to, text_message)
-# print(message_id)
+login = config.MTS_API_SMS_LOGIN
+password = config.MTS_API_SMS_PASSWORD
+naming = config.MTS_API_SMS_NAMING
+text_message = '*!EDITS TRANS:SRV1(FLEX,,,gw1.glonasssoft.ru,15003)' # Команда на перезапись сервера на Глонассофт Навтелеком
+to = config.MTS_API_SMS_TEST_TEL
+# Отправка сообщения
+result_send = send_mts_message(login, password, naming, to, text_message)
+extracted_mess_id = result_send['messages'][0]['internal_id']
+print(extracted_mess_id)
+sleep(1)
+result_check = check_message(login, password, extracted_mess_id)
+print(result_check)
+

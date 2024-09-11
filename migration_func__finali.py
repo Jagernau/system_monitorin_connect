@@ -57,15 +57,21 @@ def migration(
     condit_command: Тип для комманды
     addit_check: Дополнительная проверка
     """
+    # Фильтрация какие есть объекты у клиента
     sort_objs = sorting_obj_from_cl_name(data_objs=objs["items"], data_usrs=usrs["items"], name_cl=name_cl)
 
     count = 0 # Счётчик созданных объектов
 
-    for obj in tqdm.tqdm(sort_objs, desc="Процесс миграции..."):
+    # Полноценно созданные объекты и переведённые
+    with open('full_create_imei.txt') as f:
+        created_obj: list = f.read().split("\n")
 
-        # проверяет наличие ID объекта в файле
-        with open('created.txt') as f:
-            created_obj: list = f.read().split("\n")
+    # Созданные но не переведённые
+    with open('not_full_create_imei.txt') as f:
+        created_obj: list = f.read().split("\n")
+
+
+    for obj in tqdm.tqdm(sort_objs, desc="Процесс миграции..."):
 
         # пропускает итерацию если такой объект есть в файле
         if str(obj['id']) in created_obj:
