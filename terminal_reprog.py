@@ -3,15 +3,10 @@ from time import sleep
 from wialon.sdk import WialonError, SdkException
 from wialon_host import wialon_hosting, wialon_hosting_token
 from help_funcs import (
-        sorting_obj_from_cl_name,
         get_current_unix_time,
         search_get_comand_result,
                         )
 import my_logger
-import tqdm
-import sys
-import config
-import json
 
 def reprog_terminal(
         obj_id, 
@@ -33,7 +28,7 @@ def reprog_terminal(
         my_logger.logger.info(f"Созданна команда {create_result}")
 
     except (Exception, WialonError, SdkException) as e:
-        my_logger.logger.error(e)
+        my_logger.logger.error("Произошла ошибка при формировании команды: " + str(e))
     try:
                 exec_result = wialon_hosting.exec_terminal_comand(
                         wialon_hosting_token, 
@@ -42,9 +37,11 @@ def reprog_terminal(
                         )
                 my_logger.logger.info(f"Отправленна команда {exec_result}")
     except (Exception, WialonError, SdkException) as e:
-                my_logger.logger.error(e)
+        my_logger.logger.error("Произошла ошибка при отправки команды: " + str(e))
+        return False
     try:
-        request_time = int(get_current_unix_time()) - 3000
+        sleep(5)
+        request_time = int(get_current_unix_time()) - 300
         wialon_message_comand = wialon_hosting.get_last_masseges_data(
                 wialon_hosting_token, 
                 obj_id, 

@@ -92,6 +92,25 @@ def should_skip_full_object(obj_imei: str) -> bool:
     return obj_imei in created_objs
 
 
+def should_skip_not_full_object(obj_imei: str) -> bool:
+    """
+    Проверка есть ли не полноценно созданный объект IMEI
+    obj_imei: IMEI объекта
+    -> BOOL
+    """
+    file_name = 'not_full_created.txt'
+    if not os.path.exists(file_name):
+        with open(file_name, 'w') as file:
+            file.write("Файл созданн")
+        my_logger.logger.error("Не было файла not_full_created.txt, файл созданн")
+    else:
+        pass
+
+    with open(file_name) as f:
+        not_full_created_objs = f.read().split("\n")
+    return obj_imei in not_full_created_objs
+
+
 def get_ready_command(device_name, reprog_data, condit_com):
     """
     Отдаёт подготовленную команду для типа терминала
@@ -124,7 +143,7 @@ def create_glonass_object_from_wialon(glonass_token, obj, adapt_fields_comments,
             result = glonass_units.create_unit(
                 glonass_token,
                 parentId=PARENT_ID,
-                name=f"{obj['nm']}_{prefix}",
+                name=f"{obj['nm']}{prefix}",
                 imei=obj["uid"],
                 device_type=adapt_type,
                 model_id=MODEL_ID,
@@ -138,14 +157,14 @@ def create_glonass_object_from_wialon(glonass_token, obj, adapt_fields_comments,
             result = glonass_units.create_unit(
                 glonass_token,
                 parentId=PARENT_ID,
-                name=f"{obj['nm']}_{prefix}",
+                name=f"{obj['nm']}{prefix}",
                 imei=obj["uid"],
                 device_type=adapt_type,
                 model_id=MODEL_ID,
                 fields=adapt_fields_comments,
                 sensors=adapt_sensors
             )
-            my_logger.logger.info(f"Создан объект в Глонассофт но не переведён {obj['nm']}_{prefix} {result}")
+            my_logger.logger.info(f"Создан объект в Глонассофт но не переведён {obj['nm']}{prefix} {result}")
             with open('not_full_created.txt', "a") as f:
                 f.write(f"{obj['uid']}\n")
 
@@ -153,7 +172,24 @@ def create_glonass_object_from_wialon(glonass_token, obj, adapt_fields_comments,
         my_logger.logger.error(e)
         with open('not_created.txt', "a") as f:
             f.write(f"{obj['uid']}\n")
-        
+
+def del_val_from_non_full_obj(imei):
+    """ 
+    Удаление объекта из неполного списка
+    imei: IMEI объекта
+    """
+
+    # Открываем файл для чтения
+    file_name = 'not_full_created.txt'
+    with open(file_name, 'r') as file:
+        lines = file.readlines()
+
+    # Записываем обратно все строки, кроме той, которую нужно удалить
+    with open(file_name, 'w') as file:
+        for line in lines:
+            if line.strip('\n') != str(imei):
+                file.write(line)
+
 
 def reprogramming_sms(obj, tel_num, ready_command):
     """
@@ -256,8 +292,43 @@ def migration(
                 condit_com=condit_command
                 )
         if ready_command == None:
-            # Сразу создаём неполноценный объукт в Глонассофт, без перепрограммирования
             prefix = "_ппрог"
+        else:
+            tel_num = crud.get_db_sim_tel_from_imei(imei=obj["uid"])
+            if tel_num == None:
+                result_command = terminal_reprog.reprog_terminal(
+                        current_wialon_id,
+                        comand_name=comand_name, 
+                        terminal_comand=ready_command
+                        )
+                if result_command == False:
+                    prefix = "_ппрог"
+                else:
+                    prefix = "_"
+            else:
+                result_reprog_sms = reprogramming_sms(
+                        obj, 
+                        tel_num, 
+                        ready_command
+                        )
+                if result_reprog_sms == False:
+                    result_command = terminal_reprog.reprog_terminal(
+                            current_wialon_id,
+                            comand_name, 
+                            terminal_comand=ready_command
+                            )
+                    if result_command == False:
+                        prefix = "_ппрог"
+                    else:
+                        prefix = "_"
+                else:
+                    prefix = "_"
+
+        # Объект создаётся в любом случае
+        # Но меняется префикс.
+
+
+        if not should_skip_not_full_object(str(current_wialon_imei)):
             create_glonass_object_from_wialon(
                     glonass_token=glonass_token,
                     obj=obj, 
@@ -266,79 +337,61 @@ def migration(
                     adapt_sensors=None,
                     prefix=prefix
                     )
-            continue
-        print(prefix)
-
-        tel_num = crud.get_db_sim_tel_from_imei(imei=obj["uid"])
-        print(tel_num)
-
-        if tel_num == None:
-            result_command = terminal_reprog.reprog_terminal(
-                    current_wialon_id,
-                    comand_name, 
-                    terminal_comand=ready_command
-                    )
-            if result_command == False:
-                prefix = "_ппрог"
-                create_glonass_object_from_wialon(
-                        glonass_token=glonass_token,
-                        obj=obj, 
-                        adapt_fields_comments=fields_comments,
-                        adapt_type=adapt_device_type_to_glonass,
-                        adapt_sensors=None,
-                        prefix=prefix
-                        )
-                continue
-            else:
-                prefix = "_"
-                create_glonass_object_from_wialon(
-                        glonass_token=glonass_token,
-                        obj=obj, 
-                        adapt_fields_comments=fields_comments,
-                        adapt_type=adapt_device_type_to_glonass,
-                        adapt_sensors=None,
-                        prefix=prefix
-                        )
+        # если в файле имеется объект созданный в Глонасс, но не перепрограммированный
+        # Начинаем заново.
         else:
-            result_reprog_sms = reprogramming_sms(
-                    obj, 
-                    tel_num, 
-                    ready_command
+            tqdm.tqdm.write(f"Пытаюсь перепрограммировать {current_wialon_name} (IMEI: {current_wialon_imei}) который до этого не перепрограммировался, но был создан в Глонассофт")
+            ready_command = get_ready_command(
+                    device_name=device_name, 
+                    reprog_data=reprog_data, 
+                    condit_com=condit_command
                     )
-            if result_reprog_sms == False:
-                result_command = terminal_reprog.reprog_terminal(
-                        current_wialon_id,
-                        comand_name, 
-                        terminal_comand=ready_command
-                        )
-                if result_command == False:
-                    prefix = "_ппрог"
-                    create_glonass_object_from_wialon(
-                            glonass_token=glonass_token,
-                            obj=obj, 
-                            adapt_fields_comments=fields_comments,
-                            adapt_type=adapt_device_type_to_glonass,
-                            adapt_sensors=None,
-                            prefix=prefix
-                            )
-                    continue
+            if ready_command == None:
+                pass
             else:
-                prefix = "_"
-                create_glonass_object_from_wialon(
-                        glonass_token=glonass_token,
-                        obj=obj, 
-                        adapt_fields_comments=fields_comments,
-                        adapt_type=adapt_device_type_to_glonass,
-                        adapt_sensors=None,
-                        prefix=prefix
-                        )
-
-
-        
+                tel_num = crud.get_db_sim_tel_from_imei(imei=obj["uid"])
+                if tel_num == None:
+                    result_command = terminal_reprog.reprog_terminal(
+                            current_wialon_id,
+                            comand_name=comand_name, 
+                            terminal_comand=ready_command
+                            )
+                    if result_command == False:
+                        pass
+                    else:
+                        # вставить логику удаления из файла
+                        del_val_from_non_full_obj(imei=current_wialon_imei)
+                        with open('full_created.txt', 'a') as file:
+                            file.write(f"{current_wialon_imei}\n")
+                else:
+                    result_reprog_sms = reprogramming_sms(
+                            obj, 
+                            tel_num, 
+                            ready_command
+                            )
+                    if result_reprog_sms == False:
+                        result_command = terminal_reprog.reprog_terminal(
+                                current_wialon_id,
+                                comand_name, 
+                                terminal_comand=ready_command
+                                )
+                        if result_command == False:
+                            pass
+                        else:
+                            # вставить логику удаления из файла
+                            del_val_from_non_full_obj(imei=current_wialon_imei)
+                            with open('full_created.txt', 'a') as file:
+                                file.write(f"{current_wialon_imei}\n")
+                    else:
+                        # вставить логику удаления из файла
+                        del_val_from_non_full_obj(imei=current_wialon_imei)
+                        with open('full_created.txt', 'a') as file:
+                            file.write(f"{current_wialon_imei}\n")
 
 
 
         count += 1
+
 
 if __name__ == "__main__":
     migration(

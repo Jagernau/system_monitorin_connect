@@ -1,7 +1,4 @@
 from help_funcs import save_to_json, reserv_data_to_json, get_current_unix_time, search_get_comand_result
-import mixins
-import json
-import requests
 import config
 import time
 from wialon.sdk import WialonSdk
@@ -192,7 +189,6 @@ class WialonHosting:
         """
         Метод создания комманды для отправки через Wialon
         """
-        time.sleep(2)
         self.sdk.login(str(token))
         acc = self.sdk.unit_update_command_definition({
              "itemId": int(obj_id),
@@ -228,17 +224,6 @@ class WialonHosting:
         self.sdk.logout()
         return comand
 
-    # def get_terminal_result_data(self, token: str, obj_id, comand_id):
-    #     """
-    #     Метод получение ответа от терминала через Wialon
-    #     """
-    #     self.sdk.login(str(token))
-    #     comand_result = self.sdk.unit_get_command_definition_data({
-    #         "itemId": int(obj_id),
-    #         "col":[int(comand_id),]
-    #          })
-    #     self.sdk.logout()
-    #     return comand_result
 
     def get_last_masseges_data(self, token: str, obj_id, curent_time):
         """
@@ -249,13 +234,12 @@ class WialonHosting:
         comand_result = self.sdk.messages_load_last({
             "itemId": int(obj_id),
             "lastTime": curent_time,
-            "lastCount": 3000,
+            "lastCount": 300,
             "flags": 512,
             "flagsMask": int(0),
-            "loadCount": 3000
+            "loadCount": 300
              })
         self.sdk.logout()
-        time.sleep(2)
         return comand_result
 
 
