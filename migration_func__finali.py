@@ -1,12 +1,13 @@
+import os
 from time import sleep
 from wialon_host import wialon_hosting, wialon_hosting_token
 from help_funcs import (
-        sorting_obj_from_cl_name,
-        save_to_json, 
-        adapt_wialon_fields_to_glonass,
-        adapt_wialon_devices_to_glonass,
-        get_wialon_devices_name
-                        )
+    sorting_obj_from_cl_name,
+    save_to_json, 
+    adapt_wialon_fields_to_glonass,
+    adapt_wialon_devices_to_glonass,
+    get_wialon_devices_name
+)
 from glonasssoft import glonass_units, token, devices_types 
 import my_logger
 import tqdm
@@ -15,258 +16,338 @@ import crud
 import mts_send_mes__2
 import config
 import json
-import terminal_reprog 
+import terminal_reprog
 from wialon.sdk import WialonError, SdkException
 
-# Миграция написанна
+# Constants
+GLONASS_TOKEN = token
+WIALON_HOSTING_TOKEN = wialon_hosting_token
+PARENT_ID = "adb3a85c-b79e-44c1-bce5-dce6ef3ac00b"  # Glonass client ID
+MODEL_ID = "d2c04fab-093a-4d35-a1f2-432a168800cb"  # Glonass model ID
+LIMITATION = 50  # Object creation limit
+SMS_API_LOGIN = config.MTS_API_SMS_LOGIN
+SMS_API_PASSWORD = config.MTS_API_SMS_PASSWORD
+SMS_API_NAME = config.MTS_API_SMS_NAMING
+REPROG_DATA = {"adres": "gw1.glonasssoft.ru", "port": "15003"}
+CONDIT_COMMAND = 'сервер на указанный'
+NAME_CL = "test_"
+DOP_CHECK = 'test_'
+COMAND_NAME = "REPROG_SERV"
+
+
+def load_data_from_wialon():
+    """Загружает информацию из Wialon или из Файла резервной копии"""
+    try:
+        objs = wialon_hosting.get_all_units(WIALON_HOSTING_TOKEN)
+        usrs = wialon_hosting.get_all_users(WIALON_HOSTING_TOKEN)
+        wialon_devices = wialon_hosting.get_all_device_types(WIALON_HOSTING_TOKEN)
+        my_logger.logger.info("Объекты из Wialon APi загруженны")
+    except Exception:
+        objs = _load_from_json('reserv_json_data/wialon_hosting_all_objects.json')
+        usrs = _load_from_json('reserv_json_data/wialon_hosting_all_users.json')
+        wialon_devices = _load_from_json('reserv_json_data/wialon_hosting_device_types.json')
+        my_logger.logger.error("Объекты из Wialon APi загруженны из файла")
+    return objs, usrs, wialon_devices
+
+
+def _load_from_json(file_path: str):
+    """
+    Загрузка JSON из файла
+    file_path: имя файла
+    -> JSON
+    """
+    directory = file_path.split("/")[0]
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+        my_logger.logger.error("Не было директории для резервных копий, директория была созданна")
+    else:
+        pass
+    try:
+        my_logger.logger.info("Загруженны данные из резервных копий")
+        with open(file_path, 'r') as file:
+            return json.load(file)
+    except:
+        my_logger.logger.error("Не загрузилась данные из резервных копий")
+        print("Не загрузилась данные из резервных копий")
+        print("Никаких данных нет из Wialon. Программа завершает работу")
+        sys.exit()
+
+
+def should_skip_full_object(obj_imei: str) -> bool:
+    """
+    Проверка есть ли полноценно созданный объект IMEI
+    obj_imei: IMEI объекта
+    -> BOOL
+    """
+    file_name = 'full_created.txt'
+    if not os.path.exists(file_name):
+        with open(file_name, 'w') as file:
+            file.write("Файл созданн")
+        my_logger.logger.error("Не было файла full_created.txt, файл созданн")
+    else:
+        pass
+
+    with open(file_name) as f:
+        created_objs = f.read().split("\n")
+    return obj_imei in created_objs
+
+
+def get_ready_command(device_name, reprog_data, condit_com):
+    """
+    Отдаёт подготовленную команду для типа терминала
+    device_name: название типа девайса вынутого из Wialon
+    reprog_data: данные для изменения сырой команды
+    condit_com: маска по какому условию нужно отфильтровать команду
+    -> отдаёт полностью сформированную команду str|none
+    """
+    commands_from_device = crud.get_terminal_comand_from_wialon_types(device_name)
+    clear_command = [cmd for cmd in commands_from_device if condit_com in cmd['desc']]
+    if len(clear_command) == 0:
+        my_logger.logger.error(f"Команда не найденна под {device_name}")
+        return None
+
+    my_logger.logger.info(f"Команда найденна под {device_name}")
+    return clear_command[0]['command'].replace('XXX', reprog_data["adres"]).replace('YYY', reprog_data["port"])
+
+
+def create_glonass_object_from_wialon(glonass_token, obj, adapt_fields_comments, adapt_type, adapt_sensors, prefix):
+    """
+    Создание объекта в Глонассофт
+    token: Токен Глонассофт - str
+    obj: Объект из Wialon - dict
+    fields_comments: Адаптированные коментарии под Глонассофт от Виалон - []|None
+    adapt_type: Адаптированный тип девайса - int|None
+    adapt_sensors: Адаптированные сенсоры из Виалон - []|Датчик по умолчанию [] 
+    """
+    try:
+        if str(prefix) == "_":
+            result = glonass_units.create_unit(
+                glonass_token,
+                parentId=PARENT_ID,
+                name=f"{obj['nm']}_{prefix}",
+                imei=obj["uid"],
+                device_type=adapt_type,
+                model_id=MODEL_ID,
+                fields=adapt_fields_comments,
+                sensors=adapt_sensors
+            )
+            my_logger.logger.info(f"Создан объект в Глонассофт и переведён {obj['nm']}_{prefix} {result}")
+            with open('full_created.txt', "a") as f:
+                f.write(f"{obj['uid']}\n")
+        else:
+            result = glonass_units.create_unit(
+                glonass_token,
+                parentId=PARENT_ID,
+                name=f"{obj['nm']}_{prefix}",
+                imei=obj["uid"],
+                device_type=adapt_type,
+                model_id=MODEL_ID,
+                fields=adapt_fields_comments,
+                sensors=adapt_sensors
+            )
+            my_logger.logger.info(f"Создан объект в Глонассофт но не переведён {obj['nm']}_{prefix} {result}")
+            with open('not_full_created.txt', "a") as f:
+                f.write(f"{obj['uid']}\n")
+
+    except Exception as e:
+        my_logger.logger.error(e)
+        with open('not_created.txt', "a") as f:
+            f.write(f"{obj['uid']}\n")
+        
+
+def reprogramming_sms(obj, tel_num, ready_command):
+    """
+    Перепрограммирование терминала через СМС, возвращает успешно ли перепрог Bool
+    obj: объект Виалон - dict
+    tel_num: номер телефона сим карты на терминале - 000000000
+    ready_command: сформированная команда для перепрограммирования
+    -> bool
+    """
+    login = SMS_API_LOGIN
+    password = SMS_API_PASSWORD
+    naming = SMS_API_NAME
+    try:
+        result_send = mts_send_mes__2.send_mts_message(
+            login=login,
+            password=password,
+            naming=naming,
+            to=tel_num,
+            text_message=ready_command
+        )
+        extracted_mess_id = result_send['messages'][0]['internal_id']
+        sleep(2)
+        result_check = mts_send_mes__2.check_message(login, password, extracted_mess_id)
+        if result_check["events_info"][0]["events_info"][0]["status"] == 200:
+            my_logger.logger.info(f"Терминал с IMEI {obj['uid']} и Телефоном {tel_num} успешно перепрограмировался через СМС")
+            return True
+        else:
+            my_logger.logger.info(f"Терминал с IMEI {obj['uid']} и Телефоном {tel_num} не перепрограмировался через СМС")
+            return False
+    except Exception as e:        
+            my_logger.logger.error(f"Терминал с IMEI {obj['uid']} и Телефоном {tel_num} не перепрограмировался через СМС {e}")
+            return False
+
 
 def migration(
-        objs, 
-        usrs, 
-        parent_Id, 
-        model_id, 
-        name_cl, 
-        token, 
+        glonass_token, 
         limitation: int,
-        sms_api_login: str,
-        sms_api_password: str,
-        sms_api_name: str,
-#        sms_comand: str,
         reprog_data: dict,
         comand_name,
-        wialon_devices_types,
         condit_command: str,
         addit_check=''
         ):
     """
     Миграция объектов на Глонассофт
     Создаёт копии объектов в Глонассофт
-    obj: Объекты wialon
-    usrs: Юзеры wialon
-    parentId: ID родителя Глонассофт (Клиент)
-    model_id: ID модели объекта Глонассофт
-    name_cl: Имя создателя объектов в Wialon (login)
     token: Токен Глонассофт
     limitation: Лимит созданных объектов
-    sms_api_login: Логин для отправки СМС
-    sms_api_password: Пароль для отправки СМС
-    sms_api_name: Имя для отправки СМС
-#    sms_comand: Команда для перепрограммирования
     reprog_data: Адрес и порт для переноса куда переносится
-    wialon_devices_types: Типы оборудования Wialon
     condit_command: Тип для комманды
     addit_check: Дополнительная проверка
     """
-    # Фильтрация какие есть объекты у клиента
-    sort_objs = sorting_obj_from_cl_name(data_objs=objs["items"], data_usrs=usrs["items"], name_cl=name_cl)
+    # Получаем объекты, юзеров, типы девайсов из Wialon
+    objs, usrs, wialon_devices = load_data_from_wialon()
+    # Фильтруем объекты клиента по Логину
+    filter_objs = sorting_obj_from_cl_name(data_objs=objs["items"], data_usrs=usrs["items"], name_cl=NAME_CL)
+    # Фильтруем дополнительно список объектов по доп. параметру
+    clear_filter_objs = [i for i in filter_objs if str(addit_check) in i['nm']]
+    # Получаем типы девайсов Глонассофт
+    glonass_devices = devices_types.get_all_devices_types(token)
 
-    count = 0 # Счётчик созданных объектов
+    count = 0
 
-    # Полноценно созданные объекты и переведённые
-    with open('full_create_imei.txt') as f:
-        created_obj: list = f.read().split("\n")
+    for obj in tqdm.tqdm(clear_filter_objs, desc="Процесс миграции..."):
+        current_wialon_imei = obj["uid"]
 
-    # Созданные но не переведённые
-    with open('not_full_create_imei.txt') as f:
-        created_obj: list = f.read().split("\n")
-
-
-    for obj in tqdm.tqdm(sort_objs, desc="Процесс миграции..."):
-
-        # пропускает итерацию если такой объект есть в файле
-        if str(obj['id']) in created_obj:
+        if should_skip_full_object(str(current_wialon_imei)):
             continue
 
+        if count > int(limitation):
+            break
+
+        current_wialon_name = obj["nm"]
+        current_wialon_id = obj["id"]
+        current_wialon_device_type = obj["hw"]
         
-        if str(addit_check) in obj["nm"]:
+        # Адаптация типа девайса на Глонассофт из Wialon int|none 
+        adapt_device_type_to_glonass = adapt_wialon_devices_to_glonass(
+                wialon_devices,
+                glonass_devices, 
+                current_wialon_device_type
+                )
+        adapt_device_type_to_glonass = int(adapt_device_type_to_glonass) if adapt_device_type_to_glonass != None else int(64)
 
-            count += 1 # Счётчик созданных объектов
-            if count > int(limitation):
-                break
+        # Адаптация произвольных полей в Глонассофт -> []|none
+        fields_comments = adapt_wialon_fields_to_glonass(obj)
 
-            # Перенос произвольных полей в Глонассофт
-            # Из Wialon
-            fields_comments = adapt_wialon_fields_to_glonass(obj)
-
-            # Функция сопоставления оборудования
-            #Из Wialon в Глонассофт
-            glonass_devices = devices_types.get_all_devices_types(token)
-            wialon_devices = wialon_devices_types
-            wialon_obj_device_type = obj["hw"]
-            adapt_device_type_to_glonass = adapt_wialon_devices_to_glonass(wialon_devices, glonass_devices, wialon_obj_device_type) # адаптация типа терминала под Глонассофт
-
-            device_name = get_wialon_devices_name(wialon_devices, wialon_obj_device_type)
-            print(device_name)
-
-            # выдаёт все команды такого типа терминала
-            command_from_device = crud.get_terminal_comand_from_wialon_types(device_name)
-
-            # фильтрация команды под перепрограммирование
-
-            clear_command = []
-            for i in command_from_device:
-                if str(condit_com) in i['desc']:
-                    clear_command.append(i)
-
-
-            one_comand = clear_command[0] if len(clear_command) >= 1 else None
-
-            # Финальная команда для отправки
-            ready_command = str(one_comand["command"]).replace('XXX', reprog_data["adres"]).replace('YYY', reprog_data["port"]) if one_comand != None else None
-            print(ready_command)
-
-
-            # если тип терминала не определился, делаем по BCE -- 64
-            adap_type = int(adapt_device_type_to_glonass) if adapt_device_type_to_glonass != None else int(64)
-
-            # Работа с датчиками
-            # Датчик зажигания по умолчанию
-            moto_sensor = [
-            {
-              "kind": "Simple",
-              "type": "Ignition",
-              "name": "Зажигание (0)",
-              "inputType": "Digital",
-              "inputNumber": 0,
-              "isInverted": False,
-              "disabled": False,
-              "gradeType": "Digital",
-              "showInTooltip": True,
-              "showLastValid": False,
-              "showAsDutOnGraph": False,
-              "showWithoutIgn": True,
-              "agrFunction": "SUM",
-              "customParams": {
-                "RemoveCode": "",
-                "RemoveSeconds": "",
-                "ValueOn": "Вкл.",
-                "ValueOff": "Выкл."
-              },
-              "summaryMaxValue": None,
-              "valueIntervals": []
-            },
-            ]
+        # Название модели девайса
+        device_name = get_wialon_devices_name(wialon_devices, current_wialon_device_type)
+        print(device_name)
 
 
 
-            # Создание объекта в Глонассофт
-            try:
-                result = glonass_units.create_unit(token, 
-                                          parentId=parent_Id, 
-                                          name=obj["nm"] + "_тест", 
-                                          imei=obj["uid"], 
-                                          device_type=adap_type, 
-                                          model_id=model_id,
-                                          fields=fields_comments,
-                                          sensors=moto_sensor
-                                          )
-                my_logger.logger.info(f"Объект {obj['nm']}, создан {result}")
-                with open("created.txt", "a") as f:
-                    f.write(f"{obj['id']}\n")
+        # Логика переноса
+        prefix = "_"
 
-            except Exception as e:
-                my_logger.logger.error(e)
-                with open("not_created.txt", "a") as f:
-                    f.write(f"{obj['id']}\n")
+        # Формировании команды для перепрограммирования
+        ready_command = get_ready_command(
+                device_name=device_name, 
+                reprog_data=reprog_data, 
+                condit_com=condit_command
+                )
+        if ready_command == None:
+            # Сразу создаём неполноценный объукт в Глонассофт, без перепрограммирования
+            prefix = "_ппрог"
+            create_glonass_object_from_wialon(
+                    glonass_token=glonass_token,
+                    obj=obj, 
+                    adapt_fields_comments=fields_comments,
+                    adapt_type=adapt_device_type_to_glonass,
+                    adapt_sensors=None,
+                    prefix=prefix
+                    )
+            continue
+        print(prefix)
 
-            # Блок перепрограммирования терминала
-            try:
-                # Получение телефона из базы данных такого imei
-                tel_num = crud.get_db_sim_tel_from_imei(imei=obj["uid"])
+        tel_num = crud.get_db_sim_tel_from_imei(imei=obj["uid"])
+        print(tel_num)
 
-                if tel_num is not None:
-                    try:
-                        mts_send_mes__2.send_mts_message(login=sms_api_login,
-                                                         password=sms_api_password,
-                                                         naming=sms_api_name,
-                                                         to=tel_num,
-                                                         text_message=ready_command)
-                        my_logger.logger.info(f"Сообщение {obj['nm']}, отправлено {tel_num}")
-                        sleep(5)
-                        with open("send_sms.txt", "a") as f:
-                            f.write(f"{obj['id']} {obj['uid']} {tel_num}\n")
+        if tel_num == None:
+            result_command = terminal_reprog.reprog_terminal(
+                    current_wialon_id,
+                    comand_name, 
+                    terminal_comand=ready_command
+                    )
+            if result_command == False:
+                prefix = "_ппрог"
+                create_glonass_object_from_wialon(
+                        glonass_token=glonass_token,
+                        obj=obj, 
+                        adapt_fields_comments=fields_comments,
+                        adapt_type=adapt_device_type_to_glonass,
+                        adapt_sensors=None,
+                        prefix=prefix
+                        )
+                continue
+            else:
+                prefix = "_"
+                create_glonass_object_from_wialon(
+                        glonass_token=glonass_token,
+                        obj=obj, 
+                        adapt_fields_comments=fields_comments,
+                        adapt_type=adapt_device_type_to_glonass,
+                        adapt_sensors=None,
+                        prefix=prefix
+                        )
+        else:
+            result_reprog_sms = reprogramming_sms(
+                    obj, 
+                    tel_num, 
+                    ready_command
+                    )
+            if result_reprog_sms == False:
+                result_command = terminal_reprog.reprog_terminal(
+                        current_wialon_id,
+                        comand_name, 
+                        terminal_comand=ready_command
+                        )
+                if result_command == False:
+                    prefix = "_ппрог"
+                    create_glonass_object_from_wialon(
+                            glonass_token=glonass_token,
+                            obj=obj, 
+                            adapt_fields_comments=fields_comments,
+                            adapt_type=adapt_device_type_to_glonass,
+                            adapt_sensors=None,
+                            prefix=prefix
+                            )
+                    continue
+            else:
+                prefix = "_"
+                create_glonass_object_from_wialon(
+                        glonass_token=glonass_token,
+                        obj=obj, 
+                        adapt_fields_comments=fields_comments,
+                        adapt_type=adapt_device_type_to_glonass,
+                        adapt_sensors=None,
+                        prefix=prefix
+                        )
 
-                    except Exception as e:
-                        my_logger.logger.error(e)
-                        with open("not_send_sms.txt", "a") as f:
-                            f.write(f"{obj['id']} {obj['uid']} {tel_num}\n")
-                
-                # если нет телефона в БД_2, перепрограммируем через API Wialon
-                # else:
-                #     terminal_reprog.reprog_terminal(
-                #             obj["id"],
-                #             comand_name=comand_name,
-                #             terminal_comand=ready_command
-                #             )
 
-            except Exception as e:
-                my_logger.logger.error(e)
+        
 
 
+
+        count += 1
 
 if __name__ == "__main__":
-
-
-    # Получение всех Объектов, Пользователей, Типов терминалов
-    try:
-        objs = wialon_hosting.get_all_units(wialon_hosting_token)
-        usrs = wialon_hosting.get_all_users(wialon_hosting_token)
-        wialon_devices = wialon_hosting.get_all_device_types(wialon_hosting_token)
-
-    # Если в подключении к Wialon возникла ошибка
-    except:
-        # Объекты из файла JSON
-        with open('reserv_json_data/wialon_hosting_all_objects.json', 'r', ) as file:
-            file_obj = json.load(file)
-        objs = file_obj
-
-
-        # Пользователи из файла JSON
-        with open('reserv_json_data/wialon_hosting_all_users.json', 'r', ) as file:
-            file_usr = json.load(file)
-        usrs = file_usr
-
-
-        # Типы терминалов из файла JSON
-        with open('reserv_json_data/wialon_hosting_device_types.json', 'r', ) as file:
-            file_types = json.load(file)
-        wialon_devices = file_types
-
-
-
-    parent_Id = "adb3a85c-b79e-44c1-bce5-dce6ef3ac00b" # ID клиента Глонассофт
-    name_cl = "test_" # Логин создателя объектов в Wialon
-    token_gl = token
-    model_id="d2c04fab-093a-4d35-a1f2-432a168800cb" # ID модели ТС
-    limitation = 50 # Ограничение выгрузки
-    sms_api_login = config.MTS_API_SMS_LOGIN
-    sms_api_password = config.MTS_API_SMS_PASSWORD
-    sms_api_name = config.MTS_API_SMS_NAMING
-#    sms_comand = '*!EDITS TRANS:SRV1(FLEX,,,gw1.glonasssoft.ru,15003)'
-    reprog_data = {"adres": "gw1.glonasssoft.ru", "port": "15003"}
-    comand_name = "REPROG_SERV"
-    dop_check = 'test_'
-    condit_com = 'сервер на указанный'
-
-
-    # Миграция
     migration(
-            objs=objs, 
-            usrs=usrs, 
-            parent_Id=parent_Id,
-            model_id=model_id, 
-            name_cl=name_cl,
-            token=token_gl,
-            limitation=limitation,
-            sms_api_login=sms_api_login,
-            sms_api_password=sms_api_password,
-            sms_api_name=sms_api_name,
-#            sms_comand=sms_comand,
-            reprog_data=reprog_data,
-            comand_name=comand_name,
-            wialon_devices_types=wialon_devices,
-            condit_command=condit_com,
-            addit_check=dop_check
+            glonass_token=GLONASS_TOKEN, 
+            limitation=LIMITATION, 
+            reprog_data=REPROG_DATA, 
+            comand_name=COMAND_NAME, 
+            condit_command=CONDIT_COMMAND,
+            addit_check=DOP_CHECK
             )
-    sys.exit()
+
 

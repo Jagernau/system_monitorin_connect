@@ -186,12 +186,12 @@ def migration(
                             f.write(f"{obj['id']} {obj['uid']} {tel_num}\n")
                 
                 # если нет телефона в БД_2, перепрограммируем через API Wialon
-                # else:
-                #     terminal_reprog.reprog_terminal(
-                #             obj["id"],
-                #             comand_name=comand_name,
-                #             terminal_comand=ready_command
-                #             )
+                else:
+                    terminal_reprog.reprog_terminal(
+                            obj["id"],
+                            comand_name=comand_name,
+                            terminal_comand=ready_command
+                            )
 
             except Exception as e:
                 my_logger.logger.error(e)
@@ -236,7 +236,6 @@ if __name__ == "__main__":
     sms_api_login = config.MTS_API_SMS_LOGIN
     sms_api_password = config.MTS_API_SMS_PASSWORD
     sms_api_name = config.MTS_API_SMS_NAMING
-#    sms_comand = '*!EDITS TRANS:SRV1(FLEX,,,gw1.glonasssoft.ru,15003)'
     reprog_data = {"adres": "gw1.glonasssoft.ru", "port": "15003"}
     comand_name = "REPROG_SERV"
     dop_check = 'test_'
@@ -255,7 +254,6 @@ if __name__ == "__main__":
             sms_api_login=sms_api_login,
             sms_api_password=sms_api_password,
             sms_api_name=sms_api_name,
-#            sms_comand=sms_comand,
             reprog_data=reprog_data,
             comand_name=comand_name,
             wialon_devices_types=wialon_devices,

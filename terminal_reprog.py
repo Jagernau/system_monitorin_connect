@@ -43,6 +43,24 @@ def reprog_terminal(
                 my_logger.logger.info(f"Отправленна команда {exec_result}")
     except (Exception, WialonError, SdkException) as e:
                 my_logger.logger.error(e)
+    try:
+        request_time = int(get_current_unix_time()) - 3000
+        wialon_message_comand = wialon_hosting.get_last_masseges_data(
+                wialon_hosting_token, 
+                obj_id, 
+                request_time
+                )
+        result_message = search_get_comand_result(wialon_message_comand)
+        if result_message != None:
+            return True
+        else:
+            return False
+
+    except (Exception, WialonError, SdkException) as e:
+                my_logger.logger.error(e)
+                return False
+
+
 
 
 
