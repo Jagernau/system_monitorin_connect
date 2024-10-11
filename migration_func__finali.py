@@ -280,6 +280,8 @@ def migration(
         device_name = get_wialon_devices_name(wialon_devices, current_wialon_device_type)
         print(device_name)
 
+        adapt_sensors = None
+
 
 
         # Логика переноса

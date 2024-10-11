@@ -45,7 +45,7 @@ class WialonHosting:
         # 128 админ записи +
         # 256 доп свойства +
         # 8 Произвольные поля +
-        # 4096
+        # 4096 датчики
         'flags': 5517, 
         'from': 0,
         'to': 0
@@ -217,7 +217,7 @@ class WialonHosting:
             "commandName": str(comand_name),
             "linkType": '',
             "param": "",
-            "timeout": int(20),
+            "timeout": int(10),
             "flags": int(0)
              })
         time.sleep(2)

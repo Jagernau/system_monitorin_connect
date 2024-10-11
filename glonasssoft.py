@@ -303,8 +303,8 @@ token = glonass.token()
 
 glonass_units = GlonasssUnits(glonass)
 # all_vehicles = glonass_units.get_all_vehicles_old(token)
-# details_vehicle = glonass_units.get_detail_vehicle_by_vehicleid(token,'361294')
-# save_to_json(details_vehicle, "glonass_detail_vehicle_361294")
+# details_vehicle = glonass_units.get_detail_vehicle_by_vehicleid(token,'435868')
+# save_to_json(details_vehicle, "glonass_detail_vehicle_435868")
 # all_vehicles_new = glonass_units.get_all_vehicles_new(token,"80eb1587-12cf-44d4-b0d0-c09b7ddf6110")
 
 

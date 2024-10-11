@@ -198,7 +198,48 @@ def adapt_wialon_sensors_to_glonass(wialon_obj):
     Преобразование из Wialon датчиков в Глонассофт
     wialon_obj: Объект Wialon
     return: датчики для Глонассофт
+    "inputType": 0, // Тип входа, Analog, Digital, Impulse, ImpulseFrequency, Diagnosis, Rs485, Rs232, Wire, FMS, BLE
+    "kind": "Simple"
     """
+    def adapt_type(val):
+        """ 
+        Адаптирует тип датчика из Виалон: t в Глонасс: type
+        """
+        val = str(val).lower()
+        result = ""
+        if "fuel" in val:
+            result = "FuelLvl"
+        elif 'engine' in val:
+            result = "Ignition"
+        return result
+
+
+    def adapt_input_type(val):
+        """ 
+        Адаптирует тип вхда из Виалон: p в Глонасс: inputType
+        """
+        val = str(val).lower()
+        result = "Analog"
+        if "can" in val:
+            result = "FMS"
+        elif "rs485" in val:
+            result = "Rs485"
+        elif "in" in val:
+            result = "Digital"
+        else:
+            result = "Analog"
+        return result
+
+    def adapt_input_number(val):
+        result = 0
+        val = str(val).lower()
+        if "1" in val:
+            result = 0
+
+        if "2" in val:
+            result = 1
+
+        return result
 
     adapt_sensors = None
     # Перекладывание полей
@@ -207,10 +248,12 @@ def adapt_wialon_sensors_to_glonass(wialon_obj):
         for i in wialon_obj['sens']:
             adapt_sensors.append(
                     {
+                    "kind": "Simple",
+                    'type': adapt_type(str(wialon_obj["sens"][i]["t"])),
                     'name': str(wialon_obj["sens"][i]['n']),
-                    'value': str(wialon_obj["flds"][i]['v']).replace('"', ' ') if str(wialon_obj["flds"][i]['v']) != "" else "_",
-                    'forClient': True,
-                    'forReport': True
+                    "inputType": adapt_input_type(str(wialon_obj["sens"][i]['p'])),
+                    "inputNumber": adapt_input_number(str(wialon_obj["sens"][i]["p"])),
+                    "gradeType": 0
                     }
             )
     return adapt_sensors

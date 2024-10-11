@@ -36,14 +36,14 @@ def get_iccid_imei_comand(
     count = 0 # Счётчик созданных объектов
 
     super_sort = sorted(sort_objs, key=lambda x: x['id'])
+    clear_filter_objs = [i for i in super_sort if str(addit_check) in i['nm']]
 
-    for obj in tqdm.tqdm(super_sort, desc="Процесс получения ICCID..."):
+
+    for obj in tqdm.tqdm(clear_filter_objs, desc="Процесс отправки команды..."):
         obj_id = obj['id']
         obj_imei = obj["uid"]
         obj_name = obj["nm"]
 
-        if str(addit_check) not in obj["nm"]:
-            continue
 
         with open('requested_terms.txt') as f:
             req_obj: list = f.read().split("\n")
@@ -51,28 +51,47 @@ def get_iccid_imei_comand(
         if str(obj_imei) in req_obj:
             continue
 
-        count += 1 # Счётчик созданных объектов
+        count += 1 # Счётч
         if count > int(limitation):
             break
 
-        # try:
-        #     create_result = wialon_hosting.create_terminal_comand(wialon_hosting_token, obj_id, comand_name, terminal_comand)
-        #     my_logger.logger.info(f"Созданна команда {create_result}")
-        #
-        # except (Exception, WialonError, SdkException) as e:
-        #         my_logger.logger.error(e)
-        #
-        # finally:
-        #
-        #     try:
-        #         exec_result = wialon_hosting.exec_terminal_comand(wialon_hosting_token, obj_id, comand_name)
-        #         my_logger.logger.info(f"Отправленна команда {exec_result}")
-        #     except (Exception, WialonError, SdkException) as e:
-        #         my_logger.logger.error(e)
+        try:
+            create_result = wialon_hosting.create_terminal_comand(wialon_hosting_token, obj_id, comand_name, terminal_comand)
+            my_logger.logger.info(f"Созданна команда {create_result}")
+
+        except (Exception, WialonError, SdkException) as e:
+                my_logger.logger.error(e)
+
+        finally:
+            sleep(1)
+
+            try:
+                exec_result = wialon_hosting.exec_terminal_comand(wialon_hosting_token, obj_id, comand_name)
+                my_logger.logger.info(f"Отправленна команда {exec_result}")
+            except (Exception, WialonError, SdkException) as e:
+                my_logger.logger.error(e)
 
 
-            # finally:
-        request_time = int(get_current_unix_time()) - 3000
+
+    for obj in tqdm.tqdm(clear_filter_objs, desc="Процесс сбора результатов..."):
+        obj_id = obj['id']
+        obj_imei = obj["uid"]
+        obj_name = obj["nm"]
+
+
+        with open('requested_terms.txt') as f:
+            req_obj: list = f.read().split("\n")
+
+        if str(obj_imei) in req_obj:
+            continue
+
+        count += 1 # Счётч
+        if count > int(limitation):
+            break
+
+
+        
+        request_time = int(get_current_unix_time()) - 1000
         try:
             wialon_message_comand = wialon_hosting.get_last_masseges_data(wialon_hosting_token, obj_id, request_time)
             my_logger.logger.info(f"Ответ получен")
@@ -81,7 +100,7 @@ def get_iccid_imei_comand(
         else:
             result_message = search_get_comand_result(wialon_message_comand)
             if result_message != None:
-                with open("AGAT_IMEI_ICCID_NAME.txt", "a") as f:
+                with open("OK_COMAND.txt", "a") as f:
                     f.write(f"{obj_id};{obj_imei};{result_message};{obj_name}\n")
                 with open("requested_terms.txt", "a") as f:
                     f.write(f"{obj_imei}\n")
@@ -109,11 +128,11 @@ if __name__ == "__main__":
             file_usr = json.load(file)
         usrs = file_usr
 
-    dop_check = 'agat_'
-    name_cl = "agat_" # Логин создателя объектов в Wialon
+    dop_check = 'agat_krasnoya_Янтарь'
+    name_cl = "agat_krasnoya_Янтарь" # Логин создателя объектов в Wialon
     limitation = 3000 # Ограничение выгрузки
-    comand_name = "GET_ICCID"
-    terminal_comand = "*?ICCID"
+    comand_name = "RESET_PASSWORD"
+    terminal_comand = "*!EDITS SYSTEM:PASS(!,!)"
     
 
     get_iccid_imei_comand(

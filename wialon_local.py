@@ -1,4 +1,4 @@
-from help_funcs import save_to_json
+from help_funcs import reserv_data_to_json, save_to_json
 import mixins
 import json
 import requests
@@ -48,7 +48,8 @@ class WialonLocal:
         # 128 админ записи +
         # 256 доп свойства + 
         # 8 Произвольные поля
-        'flags': 1421, 
+        # 4096
+        'flags': 5517, 
         'from': 0,
         'to': 0
         }
@@ -190,9 +191,12 @@ class WialonLocal:
 wialon_local = WialonLocal(wialon_local_based_adress, int(wialon_local_port))
 
 # Объекты
-# local_units = wialon_local.get_all_units(wialon_local_token)
-# print(local_units)
-#save_to_json(local_units, "wialon_local_all_objects")
+local_units = wialon_local.get_all_units(wialon_local_token)
+print(local_units)
+save_to_json(local_units, "wialon_local_all_objects")
+
+reserv_data_to_json(local_units, "wialon_local_all_objects") # Резервные файлы Wialon
+
 
 #Типы терминалов
 # local_devices_types = wialon_local.get_all_device_types(wialon_local_token)

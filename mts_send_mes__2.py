@@ -53,14 +53,14 @@ def check_message(login, password, message_id):
 # login = config.MTS_API_SMS_LOGIN
 # password = config.MTS_API_SMS_PASSWORD
 # naming = config.MTS_API_SMS_NAMING
-# text_message = '*!EDITS TRANS:SRV1(FLEX,,,gw1.glonasssoft.ru,15003)' # Команда на перезапись сервера на Глонассофт Навтелеком
-# to = config.MTS_API_SMS_TEST_TEL
+# text_message = 'NTC_CONNECT rcs.navtelecom.ru 8100 65051937' # Команда на перезапись сервера на Глонассофт Навтелеком
+# to = '79819806831'
 # # Отправка сообщения
 # result_send = send_mts_message(login, password, naming, to, text_message)
 # extracted_mess_id = result_send['messages'][0]['internal_id']
 # print(extracted_mess_id)
 # sleep(1)
 # result_check = check_message(login, password, extracted_mess_id)
-# print(type(result_check["events_info"][0]["events_info"][0]["status"]))
+# print(result_check["events_info"][0]["events_info"][0]["status"])
 
 
